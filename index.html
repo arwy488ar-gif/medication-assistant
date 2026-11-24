@@ -1,0 +1,1290 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2E7D32">
+<title>AI Medication Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Layout: a real app shell. Phone: full screen with a bottom tab bar. Laptop (900px+): side navigation and a centred content column.
+     Single light theme on purpose: the course contrast checks (WCAG 1.4.3 / 1.4.11) were run on this palette. */
+  :root{ color-scheme:light;
+    --page:#E9EEE8; --bg:#F5F7F4; --surface:#FFFFFF; --ink:#1A1F1A; --muted:#4B544B; --line:#767676; --soft:#DCE2DA;
+    --primary:#2E7D32; --primary-dark:#1B5E20; --on-primary:#FFFFFF; --primary-soft:#E6F1E7;
+    --danger:#B3261E; --danger-soft:#FBEDEC; --warn:#7A4A00; --warn-soft:#FFF2D9; --focus:#0B57D0;
+    --font:"IBM Plex Sans Arabic","Segoe UI",Tahoma,system-ui,-apple-system,Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{min-height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5}
+  button,input,textarea,select{font-family:inherit}
+  .app{min-height:100vh;display:flex;flex-direction:column}
+  .view{flex:1;width:100%;max-width:640px;margin:0 auto;padding:12px max(16px, env(safe-area-inset-right, 0px)) 120px max(16px, env(safe-area-inset-left, 0px));position:relative}
+  .tabs{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;background:var(--surface);border-top:1px solid var(--soft);padding:6px 6px calc(8px + env(safe-area-inset-bottom, 0px))}
+  .navbrand{display:none}
+  .tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:56px;border:none;background:none;color:var(--muted);font-size:12.5px;font-weight:600;cursor:pointer;border-radius:12px}
+  .tabs button[aria-current="page"]{color:var(--primary-dark)}
+  .tabs button[aria-current="page"] .tab-ic{background:var(--primary-soft)}
+  .tab-ic{width:56px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center}
+  @media (min-width:900px){
+    .app{flex-direction:row}
+    .tabs{position:sticky;top:0;height:100vh;flex-direction:column;width:232px;flex:none;border-top:none;border-inline-end:1px solid var(--soft);padding:22px 12px;gap:4px}
+    .tabs button{flex:none;flex-direction:row;justify-content:flex-start;gap:10px;font-size:15.5px;padding:0 8px;min-height:52px}
+    .tabs .tab-ic{width:40px}
+    .navbrand{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--primary-dark);font-size:16px;padding:0 8px 18px}
+    .view{max-width:760px;padding-top:28px;padding-bottom:48px}
+  }
+  svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  svg.s{width:18px;height:18px}
+  [dir="rtl"] svg.flip{transform:scaleX(-1)}
+  h1{font-size:25px;line-height:1.3;margin:6px 0 4px;text-wrap:balance}
+  h2{font-size:17px;margin:18px 0 8px}
+  p{margin:0 0 10px}
+  .muted{color:var(--muted)}
+  .small{font-size:14px}
+  :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+  h1:focus,h2:focus,.focus-none:focus{outline:none}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px -6px 4px}
+  .top .r{display:flex;align-items:center;gap:2px}
+  .iconbtn{width:48px;height:48px;border-radius:50%;border:none;background:transparent;color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+  .iconbtn:hover{background:var(--primary-soft)}
+  .langbtn{min-height:40px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--primary-dark);font-size:14px;font-weight:700;cursor:pointer}
+  .card{background:var(--surface);border-radius:20px;padding:16px;border:1px solid var(--soft)}
+  .btn{display:block;width:100%;min-height:54px;padding:10px 16px;font-size:17px;font-weight:700;border-radius:14px;margin:0 0 10px;cursor:pointer;text-align:center}
+  .btn svg.i{vertical-align:-6px;margin-inline-end:8px}
+  .primary{background:var(--primary);color:var(--on-primary);border:2px solid var(--primary)}
+  .primary:hover{background:var(--primary-dark);border-color:var(--primary-dark)}
+  .secondary{background:var(--surface);color:var(--primary-dark);border:2px solid var(--primary)}
+  .secondary:hover{background:var(--primary-soft)}
+  .danger{background:var(--danger);color:#fff;border:2px solid var(--danger)}
+  .ghost{background:transparent;color:var(--primary-dark);border:2px solid transparent;text-decoration:underline}
+  .row{display:flex;gap:10px}.row>.btn{flex:1}
+  .link{background:none;border:none;color:var(--primary-dark);text-decoration:underline;font-size:16px;min-height:44px;padding:0 4px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:999px;font-size:13.5px;font-weight:700;white-space:nowrap}
+  .chip svg.i{width:15px;height:15px;stroke-width:2.4}
+  .c-due{background:var(--warn-soft);color:var(--warn);border:1px solid #B98A3A}
+  .c-taken{background:var(--primary-soft);color:var(--primary-dark);border:1px solid var(--primary)}
+  .c-missed{background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger)}
+  .c-up{background:#F0F2EF;color:var(--muted);border:1px solid #9AA39A}
+  .c-wait{background:var(--warn-soft);color:var(--warn);border:1px dashed var(--warn)}
+  /* home */
+  .hello{font-size:14px;color:var(--muted);margin:0}
+  .next{background:var(--primary);color:#fff;border-radius:22px;padding:16px;margin:12px 0 4px}
+  .next .lbl{font-size:13px;font-weight:700;letter-spacing:.04em;opacity:.95}
+  .next .nm{font-size:21px;font-weight:700;margin:2px 0}
+  .next .chip{background:#fff;color:var(--primary-dark);border:none}
+  .next .btn.primary{background:#fff;color:var(--primary-dark);border-color:#fff}
+  .next .btn.secondary{background:transparent;color:#fff;border-color:#fff}
+  .next .row{margin-top:12px}.next .row .btn{margin:0;font-size:16px;min-height:50px}
+  .prog{display:flex;align-items:center;gap:14px;margin:10px 0}
+  .ring{width:64px;height:64px;flex:none}
+  .ring circle{fill:none;stroke-width:7}
+  .slot{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.04em;margin:16px 2px 6px}
+  .dose{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--soft);border-radius:16px;padding:12px;margin-bottom:8px;width:100%;text-align:start;color:inherit;font-size:inherit;cursor:pointer}
+  .dose:hover{border-color:var(--line)}
+  .dose.missed{border:2px solid var(--danger)}
+  .medic{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex:none}
+  .dose .g{flex:1;min-width:0}
+  .dose .n{font-weight:700;font-size:16.5px}
+  .dose .m{font-size:14px;color:var(--muted)}
+  .dose .t{font-weight:700;font-size:15px;text-align:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+  .fab{position:fixed;inset-inline-end:16px;bottom:94px;z-index:5;display:flex;align-items:center;gap:8px;min-height:56px;padding:0 18px 0 14px;border-radius:28px;border:none;background:var(--primary-dark);color:#fff;font-size:16px;font-weight:700;box-shadow:0 6px 16px rgba(0,0,0,.22);cursor:pointer}
+  [dir="rtl"] .fab{padding:0 14px 0 18px}
+  .empty{text-align:center;padding:24px 8px}
+  .empty .big{width:76px;height:76px;border-radius:50%;background:var(--primary-soft);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;margin:8px auto 12px}
+  .empty .big svg.i{width:38px;height:38px}
+  /* lists */
+  .med{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--soft);border-radius:16px;padding:12px;margin-bottom:8px;width:100%;text-align:start;font-size:inherit;color:inherit;cursor:pointer}
+  .med .g{flex:1;min-width:0}
+  .med .n{font-weight:700;font-size:17px}
+  /* forms */
+  .field{margin-bottom:16px}
+  .field>label,.field>.lab{display:block;font-weight:700;margin-bottom:6px}
+  input[type=text],input[type=time],textarea{width:100%;font-size:17px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:50px;color:var(--ink);background:#fff}
+  input[aria-invalid="true"]{border:2px solid var(--danger)}
+  textarea{min-height:80px;resize:vertical}
+  .inwrap{display:flex;gap:8px}.inwrap input{flex:1}
+  .micbtn{width:50px;height:50px;border-radius:12px;border:2px solid var(--primary);background:var(--surface);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+  .opts{display:flex;flex-wrap:wrap;gap:8px}
+  .opt{display:inline-flex;align-items:center;gap:6px;min-height:46px;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:15px;cursor:pointer}
+  .opt[aria-checked="true"],.opt[aria-pressed="true"]{border:2px solid var(--primary);background:var(--primary-soft);color:var(--primary-dark);font-weight:700}
+  .stepper{display:flex;align-items:center;gap:12px}
+  .stepper button{width:48px;height:48px;border-radius:50%;border:2px solid var(--primary);background:var(--surface);color:var(--primary-dark);font-size:22px;font-weight:700;cursor:pointer}
+  .stepper output{font-size:20px;font-weight:700;min-width:110px;text-align:center}
+  .err{color:var(--danger);font-weight:700;display:flex;gap:6px;align-items:center;margin:6px 0 0;font-size:15px}
+  .errbox{border:2px solid var(--danger);background:var(--danger-soft);border-radius:14px;padding:10px 12px;margin-bottom:14px}
+  .sugg{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .swatch{width:44px;height:44px;border-radius:50%;border:3px solid transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#fff}
+  .swatch[aria-checked="true"]{border-color:var(--ink)}
+  /* settings rows */
+  .set{background:var(--surface);border:1px solid var(--soft);border-radius:18px;padding:0 14px;margin-bottom:14px}
+  .srow{display:flex;gap:12px;align-items:center;min-height:62px;padding:10px 0;border-bottom:1px solid var(--soft)}
+  .srow:last-child{border-bottom:none}
+  .srow .g{flex:1;min-width:0}.srow b{display:block;font-size:16px}.srow small{display:block;color:var(--muted);font-size:13.5px}
+  button.srow{width:100%;background:none;border:none;border-bottom:1px solid var(--soft);text-align:start;font-size:inherit;color:inherit;cursor:pointer}
+  .switch{width:58px;height:34px;border-radius:17px;border:2px solid var(--line);background:#E3E7E1;position:relative;cursor:pointer;flex:none;padding:0}
+  .switch::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--line);transition:inset-inline-start .15s}
+  .switch[aria-checked="true"]{background:var(--primary);border-color:var(--primary)}
+  .switch[aria-checked="true"]::after{inset-inline-start:25px;border-color:var(--primary)}
+  .swst{font-size:13px;font-weight:700;color:var(--muted);min-width:34px;text-align:end}
+  /* history */
+  .week{display:flex;justify-content:space-between;gap:4px;margin:8px 0 14px}
+  .day{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;border-radius:14px;border:1px solid var(--soft);background:var(--surface);cursor:pointer;font-size:12.5px;color:var(--ink);min-height:74px}
+  .day[aria-pressed="true"]{border:2px solid var(--primary);background:var(--primary-soft)}
+  .day .dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .day .dot svg.i{width:16px;height:16px;stroke-width:2.6}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--muted);margin-bottom:8px}
+  .legend span{display:inline-flex;align-items:center;gap:4px}
+  /* overlay (reminder layer) */
+  .layer{position:fixed;inset:0;z-index:20;background:var(--bg);overflow-y:auto}
+  .layer .view{padding-top:12px;padding-bottom:40px;max-width:560px}
+  .alarm{background:linear-gradient(180deg,var(--primary-soft),var(--bg) 60%)}
+  .hero{width:88px;height:88px;border-radius:50%;margin:18px auto 10px;display:flex;align-items:center;justify-content:center}
+  .hero svg.i{width:44px;height:44px;stroke-width:2.3}
+  .hero.ok{background:var(--primary-soft);color:var(--primary-dark)}
+  .hero.bad{background:var(--danger-soft);color:var(--danger)}
+  .hero.warn{background:var(--warn-soft);color:var(--warn)}
+  .center{text-align:center}
+  .bigmed{display:flex;gap:14px;align-items:center;background:var(--surface);border-radius:20px;padding:16px;border:1px solid var(--soft);margin:12px 0 18px}
+  .bigmed .medic{width:56px;height:56px;border-radius:16px}
+  .bigmed .medic svg.i{width:30px;height:30px}
+  .bigmed .n{font-size:21px;font-weight:700}
+  .radio{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;min-height:62px;cursor:pointer;background:var(--surface);font-size:17px}
+  .radio:has(input:checked){border:2px solid var(--primary);background:var(--primary-soft)}
+  .radio input{width:24px;height:24px;margin:0;flex:none;accent-color:var(--primary)}
+  .radio small{display:block;color:var(--muted);font-size:14px}
+  .note{display:flex;gap:10px;align-items:flex-start;background:#EEF1ED;border-radius:12px;padding:10px 12px;font-size:15px;margin-bottom:14px}
+  .banner{display:flex;gap:10px;align-items:flex-start;border-radius:14px;padding:10px 12px;margin:6px 0 12px;font-size:15px}
+  .banner .g{flex:1}
+  .banner.ok{background:var(--primary-soft);border:1px solid var(--primary)}
+  .banner.info{background:#EEF1ED;border:1px solid var(--line)}
+  .banner.warn{background:var(--warn-soft);border:1px solid #B98A3A;color:var(--warn)}
+  /* sheets / dialogs */
+  .scrim{position:fixed;inset:0;background:rgba(12,22,12,.5);z-index:30}
+  .sheet{position:fixed;left:10px;right:10px;bottom:10px;z-index:31;background:var(--surface);border-radius:24px;padding:20px 18px 12px;box-shadow:0 -6px 24px rgba(0,0,0,.2);max-height:calc(100% - 30px);overflow:auto}
+  .sheet .x{position:absolute;inset-inline-end:8px;top:8px}
+  @media (min-width:700px){.sheet{left:50%;right:auto;bottom:auto;top:50%;transform:translate(-50%,-50%);width:480px}}
+  .sheet h2{font-size:20px;line-height:1.35;margin:0 0 6px;padding-inline-end:42px}
+  .tag{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--primary-dark);background:var(--primary-soft);border-radius:999px;padding:3px 10px;margin-bottom:10px}
+  .tag svg.i{width:16px;height:16px}
+  .why{font-size:15px;color:var(--muted);margin-bottom:14px}
+  .fb{border-top:1px solid var(--soft);margin-top:6px;padding-top:12px}
+  .fb .q{font-size:15px;font-weight:700;margin-bottom:8px}
+  .heard{background:#EEF1ED;border-radius:12px;padding:10px 12px;min-height:48px;font-size:17px;margin-bottom:12px}
+  .pulse{width:74px;height:74px;border-radius:50%;background:var(--primary);color:#fff;margin:4px auto 10px;display:flex;align-items:center;justify-content:center;animation:p 1.4s ease-in-out infinite}
+  .pulse svg.i{width:34px;height:34px}
+  @keyframes p{0%,100%{box-shadow:0 0 0 0 rgba(46,125,50,.45)}50%{box-shadow:0 0 0 14px rgba(46,125,50,0)}}
+  .toast{position:fixed;left:14px;right:14px;bottom:92px;max-width:520px;margin:0 auto;z-index:40;background:#1F2A1F;color:#fff;border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;font-size:15px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+  .toast .g{flex:1}
+  .toast button{background:none;border:none;color:#B9E6BC;font-weight:700;text-decoration:underline;font-size:15px;min-height:44px;cursor:pointer}
+  .vstat{border:1px solid var(--primary);background:var(--primary-soft);border-radius:14px;padding:10px 12px;margin:6px 0 12px;font-size:15px}
+  .vstat .q{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
+  .vstat .opt{min-height:44px}
+  .study{border:2px dashed var(--line);border-radius:18px;padding:12px 14px;margin-bottom:14px;background:#FAFBF9}
+  .study .btn{min-height:46px;font-size:15px}
+  .study label{display:flex;gap:8px;align-items:center;min-height:40px}
+  .study input{width:24px;height:24px;accent-color:var(--primary)}
+  [hidden]{display:none!important}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  @media (prefers-reduced-motion:reduce){.pulse{animation:none}.switch::after{transition:none}}
+  /* numbered callouts for report figures (?annot) */
+  .annot [data-c]{position:relative}
+  .annot [data-c]::after{content:attr(data-c);position:absolute;inset-inline-start:-12px;top:-10px;width:24px;height:24px;border-radius:50%;background:#C62828;color:#fff;font:700 13px/24px Arial;text-align:center;z-index:60;box-shadow:0 0 0 2px #fff}
+  @media (min-width:900px){.fab{bottom:28px;inset-inline-end:32px}.toast{bottom:28px}}
+  /* notification banner (simulates the phone's notification) */
+  .notif{position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top, 0px));z-index:50;max-width:520px;margin:0 auto;display:flex;align-items:stretch;background:rgba(255,255,255,.98);
+    border:1px solid var(--soft);border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.22);animation:drop .35s ease-out}
+  .notif .nbody{flex:1;display:flex;gap:12px;align-items:center;text-align:start;background:none;border:none;padding:12px 6px 12px 14px;font-size:inherit;color:inherit;cursor:pointer;min-height:72px}
+  [dir="rtl"] .notif .nbody{padding:12px 14px 12px 6px}
+  .notif .napp{display:block;font-size:12.5px;color:var(--muted);font-weight:700;letter-spacing:.02em}
+  .notif b{display:block;font-size:16px}
+  .notif .nt{display:block;font-size:14.5px}
+  .notif .logo-s{width:40px;height:40px;border-radius:11px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+  .notif .iconbtn{align-self:center}
+  @keyframes drop{from{transform:translateY(-120%)}to{transform:none}}
+  @media (prefers-reduced-motion:reduce){.notif{animation:none}}
+  /* auth */
+  .auth{max-width:460px;margin:0 auto;padding:16px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px));min-height:100vh;display:flex;flex-direction:column}
+  .logo{width:96px;height:96px;border-radius:28px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;margin:36px auto 14px;box-shadow:0 10px 24px rgba(46,125,50,.28)}
+  .logo svg.i{width:50px;height:50px;stroke-width:2.2}
+  .seg{display:flex;background:#E7ECE5;border-radius:14px;padding:4px;gap:4px;margin:6px 0 16px}
+  .seg button{flex:1;min-height:46px;border:none;border-radius:11px;background:transparent;font-size:15px;font-weight:700;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+  .seg button[aria-checked="true"]{background:var(--surface);color:var(--primary-dark);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+  .phonein{direction:ltr;display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+  .phonein span{display:flex;align-items:center;padding:0 12px;background:#EEF1ED;font-weight:700;border-inline-end:1px solid var(--line);direction:ltr}
+  .phonein input{border:none;border-radius:0;flex:1;direction:ltr;text-align:left}
+  .phonein:focus-within{outline:3px solid var(--focus);outline-offset:2px}
+  .phonein input:focus-visible{outline:none}
+  .pw{position:relative}.pw input{padding-inline-end:84px}
+  .pw button{position:absolute;inset-inline-end:4px;top:4px;min-height:42px;padding:0 10px;border:none;background:none;color:var(--primary-dark);font-weight:700;text-decoration:underline;cursor:pointer}
+  .otp{font-size:28px!important;letter-spacing:.5em;text-align:center;direction:ltr;font-weight:700}
+  .demo{display:flex;gap:10px;align-items:flex-start;border:1px dashed var(--line);background:#F7F8F6;border-radius:12px;padding:10px 12px;font-size:14.5px;margin-bottom:14px}
+  .alt{text-align:center;margin-top:auto;padding-top:16px}
+  input[type=email],input[type=password],input[type=tel],input[type=date]{width:100%;font-size:17px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:50px;color:var(--ink);background:#fff}
+  /* services */
+  .hdr{display:flex;align-items:center;gap:12px;margin:4px 0 8px}
+  .avatar{width:48px;height:48px;border-radius:50%;background:var(--primary-soft);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:19px;flex:none}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0 6px}
+  .svc{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:100px;padding:12px 6px;border-radius:18px;background:var(--surface);border:1px solid var(--soft);cursor:pointer;font-size:14px;font-weight:700;color:var(--ink);text-align:center}
+  .svc:hover{border-color:var(--line)}
+  .svc .medic{width:46px;height:46px}
+  .appt{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--soft);border-radius:16px;padding:12px;margin-bottom:8px;width:100%;text-align:start;font-size:inherit;color:inherit;cursor:pointer}
+  .appt.past{opacity:.85}
+  .dateblk{width:54px;flex:none;border-radius:12px;background:#E3EEFA;color:#0D47A1;text-align:center;padding:6px 0;line-height:1.15}
+  .dateblk b{display:block;font-size:20px}
+  .dateblk span{font-size:12.5px;font-weight:700}
+  .appt .g{flex:1;min-width:0}
+</style>
+</head>
+<body>
+
+<div class="app" id="dev">
+  <nav class="tabs" id="tabs" aria-label="Main"></nav>
+  <main class="view" id="view"></main>
+  <div id="fabBox"></div>
+  <div id="layer"></div>
+  <div id="dlg"></div>
+  <div id="toastBox"></div>
+  <div id="notifBox"></div>
+</div>
+<div id="liveA" class="sr" aria-live="assertive"></div>
+<div id="live" class="sr" aria-live="polite"></div>
+
+<script>
+/* ============ icons ============ */
+const ICONS = {
+  home:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+  pill:'<path d="M10.5 3.5a5 5 0 0 1 7 7l-7 7a5 5 0 0 1-7-7z"/><path d="M8.5 8.5l7 7"/>',
+  capsule:'<rect x="3" y="8.5" width="18" height="7" rx="3.5"/><path d="M12 8.5v7"/>',
+  syringe:'<path d="M18 2l4 4"/><path d="M17 7l3-3"/><path d="M19 9L9 19l-4 1 1-4L16 6z"/><path d="M12 9l3 3M9.5 11.5l1.5 1.5"/>',
+  drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+  bottle:'<path d="M9 2h6v3H9z"/><path d="M8 5h8l1 3v12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8z"/><path d="M7 12h10"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/>',
+  bell:'<path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  undo:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+  alert:'<path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4"/><path d="M12 17v.5"/>',
+  wifioff:'<path d="M3 3l18 18"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M5 12.5a10 10 0 0 1 4.5-2.4"/><path d="M19 12.5a10 10 0 0 0-2.5-1.8"/><path d="M2 8.8a15 15 0 0 1 4.2-2.6"/><path d="M22 8.8A15 15 0 0 0 11 5"/><path d="M12 20h.01"/>',
+  up:'<path d="M7 10v11H4V10z"/><path d="M7 10l4-7a2 2 0 0 1 3 2l-1 5h6a2 2 0 0 1 2 2.3l-1.3 7A2 2 0 0 1 17.7 21H7"/>',
+  down:'<g transform="matrix(1 0 0 -1 0 24)"><path d="M7 10v11H4V10z"/><path d="M7 10l4-7a2 2 0 0 1 3 2l-1 5h6a2 2 0 0 1 2 2.3l-1.3 7A2 2 0 0 1 17.7 21H7"/></g>',
+  spark:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16v4M17 18h4"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18"/>',
+  list:'<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="5" cy="6" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="5" cy="18" r="1"/>',
+  cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  msg:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>',
+  chev:'<path d="M9 5l7 7-7 7"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  kbd:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/>',
+  circle:'<circle cx="12" cy="12" r="7"/>',
+  sync:'<path d="M20 11a8 8 0 0 0-14.5-4.5L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.5 4.5L20 16"/><path d="M20 20v-4h-4"/>',
+  trash:'<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  brief:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2M3 12h18"/>',
+  flask:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7 15h10"/>',
+  minus:'<path d="M5 12h14"/>',
+  phone:'<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6l8.5 7 8.5-7"/>',
+  lock:'<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+  logout:'<path d="M15 4h4v16h-4"/><path d="M10 8l-4 4 4 4"/><path d="M6 12h10"/>',
+  steth:'<path d="M6 3v6a5 5 0 0 0 10 0V3"/><path d="M11 14v2a4 4 0 0 0 8 0v-3"/><circle cx="19" cy="11" r="2"/>',
+};
+const ic = (n, cls='') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICONS[n]||''}</svg>`;
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ============ storage (accounts live on this device only: there is no server in this prototype) ============ */
+const KEY = 'medasst.v3';
+let ROOT = (() => { try{ return JSON.parse(localStorage.getItem(KEY)) || null; }catch(e){ return null; } })() || { lang:'ar', accounts:[], current:null, data:{} };
+const DATA_KEYS = ['name','workEnd','sugOn','voiceOn','soundOn','meds','log','post','hist','blocked','feedback','appts'];
+const blank = () => ({ name:'', workEnd:'17:00', sugOn:true, voiceOn:true, soundOn:true, meds:[], log:{}, post:{}, hist:[], blocked:[], feedback:[], appts:[] });
+function persist(){
+  ROOT.lang = S.lang; ROOT.current = S.uid;
+  if (S.uid){ const d = {}; DATA_KEYS.forEach(k => d[k] = S[k]); ROOT.data[S.uid] = d; }
+  try{ localStorage.setItem(KEY, JSON.stringify(ROOT)); }catch(e){}
+}
+const hashPw = pw => { let x = 2166136261; for (const ch of 'medasst:' + pw){ x ^= ch.charCodeAt(0); x = Math.imul(x, 16777619) >>> 0; } return x.toString(16); };
+
+/* ============ state ============ */
+const S = Object.assign(blank(), { lang:ROOT.lang || 'ar', uid:null,
+  tab:'home', page:null, layer:null, dialog:null, offline:false, toast:null, form:null, histDay:0, vstat:null, voiceUI:null, f1:null, banner:null, shownKeys:{}, auth:{ scr:'welcome', method:'phone' } });
+function signIn(id){ S.uid = id; Object.assign(S, blank(), ROOT.data[id] || {}); const a = ROOT.accounts.find(x => x.id === id); if (a && !S.name) S.name = a.name; S.tab = 'home'; S.page = null; S.layer = null; S.dialog = null; persist(); }
+function signOut(){ stopListen(); S.notif = null; persist(); S.uid = null; Object.assign(S, blank()); S.layer = null; S.dialog = null; S.auth = { scr:'login', method:'phone' }; persist(); }
+if (ROOT.current && ROOT.accounts.some(a => a.id === ROOT.current)) signIn(ROOT.current);
+
+/* ============ time helpers ============ */
+const pad = n => String(n).padStart(2,'0');
+const now = () => new Date();
+const isoDay = (d=now()) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+const at = (hhmm, d=now()) => { const [h,m] = hhmm.split(':').map(Number); const x = new Date(d); x.setHours(h,m,0,0); return x; };
+const loc = () => S.lang==='ar' ? 'ar-SA' : 'en-US';
+const fT = d => new Intl.DateTimeFormat(loc(),{hour:'numeric',minute:'2-digit'}).format(d);
+const T = d => `<bdi>${fT(typeof d==='string' ? at(d) : d)}</bdi>`;
+const N = n => new Intl.NumberFormat(loc()).format(n);
+const gDate = d => new Intl.DateTimeFormat(S.lang==='ar'?'ar-SA-u-ca-gregory':'en-GB',{weekday:'long',day:'numeric',month:'long'}).format(d);
+const hDate = d => new Intl.DateTimeFormat((S.lang==='ar'?'ar-SA':'en-US')+'-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'}).format(d);
+const wd = d => new Intl.DateTimeFormat(loc(),{weekday:'short'}).format(d);
+const dnum = d => new Intl.DateTimeFormat(loc()+(S.lang==='ar'?'-u-ca-gregory':''),{day:'numeric'}).format(d);
+const mins = ms => Math.round(ms/60000);
+function inWords(ms){ const m = mins(ms), h = Math.floor(m/60), r = m%60;
+  if (S.lang==='ar') return h ? `بعد ${N(h)} س${r?` و${N(r)} د`:''}` : `بعد ${N(Math.max(r,1))} دقيقة`;
+  return h ? `in ${h} h${r?` ${r} min`:''}` : `in ${Math.max(r,1)} min`; }
+
+/* ============ text ============ */
+const L = {
+ en:{
+  app:'Medication Assistant', home:'Home', meds:'Medicines', hist:'Record', acct:'Account',
+  morning:'Good morning', afternoon:'Good afternoon', evening:'Good evening',
+  nextDose:'NEXT DOSE', dueNow:'Due now', taken:'Taken', later:'Remind me later', allDone:'All doses for today are done.', noMeds:'No medicines yet',
+  noMedsT:'Add your first medicine and we will remind you when it is time.', addMed:'Add medicine', example:'Start with example medicines',
+  progress:(a,b)=>`${a} of ${b} doses taken today`, slots:['MORNING','AFTERNOON','EVENING'],
+  st:{ taken:t=>`Taken ${t}`, due:'Due now', missed:'Missed', up:t=>t, post:t=>`Reminder at ${t}`, wait:'Waiting to save' },
+  speak:'Speak', other:'العربية', settings:'Settings',
+  medsH:'My medicines', medsSub:n=>`${n} medicines`, timesDay:n=>n===1?'Once a day':n===2?'Twice a day':`${n} times a day`,
+  forms:{ tablet:'Tablet', capsule:'Capsule', injection:'Injection', drops:'Drops', syrup:'Syrup' },
+  units:{ tablet:['tablet','tablets'], capsule:['capsule','capsules'], injection:['unit','units'], drops:['drop','drops'], syrup:['ml','ml'] },
+  food:{ before:'Before food', after:'After food', any:'Any time' },
+  addH:'Add medicine', editH:'Edit medicine', fName:'Medicine name', fNameHint:'Type or speak the name', fForm:'Type', fDose:'Dose', fFreq:'How often', fTimes:'Times',
+  fTime:n=>`Time ${n}`, fFood:'With food', fColor:'Colour tag', fNotes:'Notes (optional)', save:'Save medicine', cancel:'Cancel', delMed:'Delete medicine',
+  errName:'Enter the medicine name.', errTimes:'Two times are the same. Change one of them.', errSum:n=>n===1?'Please fix 1 problem before saving.':`Please fix ${n} problems before saving.`,
+  colors:{ green:'Green', blue:'Blue', orange:'Orange', purple:'Purple', red:'Red', grey:'Grey' },
+  added:n=>`${n} added. We will remind you at the times you set.`, updated:n=>`${n} updated.`, deleted:n=>`${n} deleted.`,
+  delQ:n=>`Delete ${n}?`, delT:'Its reminders will stop. Your past record stays.', del:'Delete', keepIt:'Keep it',
+  detSched:'Schedule', detEdit:'Edit', back:'Back',
+  histH:'Record', histSub:'Last 7 days', legend:{ all:'All taken', some:'Some taken', none:'None taken', nodata:'No doses' }, today:'Today', noDoses:'No doses on this day.',
+  pct:p=>`${p}% of doses taken in the last 7 days`,
+  acctH:'Account', yourName:'Your name', namePh:'Example: Hind', lang:'Language', workEnd:'I usually finish work at', sug:'Personal suggestions', sugD:'Suggests a reminder time from your past choices.',
+  voice:'Voice commands', voiceD:'Speak instead of tapping.', on:'On', off:'Off', fbRow:'Send feedback', fbRowD:'Tell us what works and what does not.',
+  about:'About', aboutD:'Version 1.0 · AI418 Group 24 prototype', resetAll:'Delete all my data', resetQ:'Delete all your data?', resetT:'Your medicines and record will be removed from this phone.',
+  study:'Study tools (research team only)', studyD:'For usability sessions. Participants do not use these.', sendRem:'Send a reminder now', fireRem:'Bring back the postponed reminder now',
+  offline:'Simulate no internet', histMode:'Past postpone choices', hm:{ usual:'Usual: “When I finish work” ×3', mixed:'Mixed: no clear habit', none:'None' }, loadStudy:'Load study medicines', callouts:'Show callout numbers', fbSaved:n=>`Feedback saved on this phone: ${n}`,
+  remH:'Time for your medicine', remSched:t=>`Scheduled for ${t}`, remPost:t=>`Postponed from ${t}`, tabletsDose:(n,u)=>`${n} ${u}`,
+  postH:'When should we remind you again?', remindMe:'Remind me', o30:'In 30 minutes', o60:'In 1 hour', owork:'When I finish work', atT:t=>`at ${t}`, atTom:t=>`tomorrow at ${t}`,
+  stays:'Your dose stays on today’s list as “due” until you take it.', setRem:'Set reminder', unsure:'Not sure yet which time suits you. Pick one, and we will learn from your choice.',
+  sugTag:'Suggestion', sugQ:t=>`Remind you at ${t}, like last week?`, sugWhy:(o,n)=>`In the last 7 days you chose “${o}” ${n} times for this medicine.`,
+  sugSet:t=>`Set reminder for ${t}`, sugOther:'Choose another time', closeSug:'Close suggestion', helpQ:'Was this suggestion helpful?', helpful:'Helpful', notHelpful:'Not helpful', whyQ:'What was wrong?',
+  rTime:'Wrong time', rOff:'I don’t want suggestions', rElse:'Something else', mThanks:'Thanks for telling us.', mTime:t=>`Got it. We won’t suggest ${t} for this medicine again.`, mOff:'Personal suggestions are off. You can turn them on in Account.', mElse:'Thanks. Your feedback was saved.', undo:'Undo',
+  setH:'Reminder set', setT:t=>`We will remind you at ${t}.`, done:'Done', change:'Change time', cancelRem:'Cancel reminder', remCancelled:'Reminder cancelled. The dose is due now.',
+  takenH:'Taken', takenT:(n,t)=>`${n}, taken at ${t}.`, viewToday:'Back to home', undoTaken:'Undo — I didn’t take it',
+  undoH:'Marked as taken by mistake?', undoA:(n,t)=>`${n} was marked as taken at ${t}.`, undoB:'If you undo, it goes back to “due” and we will remind you again.', yesUndo:'Yes, undo', keepTaken:'No, keep it as taken', undone:'Undone. The dose is due again.',
+  offH:'Not saved yet', offT:'There is no internet connection, so we could not save “Taken”. We kept it on this phone and will save it when you are back online.', retry:'Try again', still:'Still no connection. We will keep trying.', savedNow:'Back online. Your dose was saved.',
+  vh:'Listening…', vhint:'Say “Taken”, “Remind me later” or “When I finish work”.', stop:'Stop', typeIns:'Type instead', cmd:'Your command', run:'Send',
+  heard:x=>`I heard: “${x}”`, didMean:c=>`Did you mean: ${c}?`, yes:'Yes', no:'No', notCaught:'Sorry, I did not catch that.', tryAgain:'Try again', useBtns:'Use the buttons',
+  noVoice:'Voice does not work here. Open the app in Chrome or Edge on a computer, or type your command instead.', blockedMic:'The microphone is not available here. Open the app in Chrome or Edge, or type your command instead.', voiceOff:'Voice commands are off. Turn them on in Account.', noneDue:'No dose is due right now.',
+  youSaid:x=>`You said: “${x}”.`, rightQ:'Did I get that right?', noUndo:'No, undo', vThanks:'Thanks.', vUndone:'Undone. Try again, or use the buttons.', sorryNo:'Sorry about that. Try again, or use the buttons.',
+  c:{ taken:n=>`Taken — ${n}`, later:'Remind me later', work:t=>`Remind me when I finish work (${t})`, '30':t=>`Remind me in 30 minutes (${t})`, '60':t=>`Remind me in 1 hour (${t})`, meds:'Open my medicines', home:'Open home' },
+  f1h:'Send feedback', f1q:'How is the app working for you?', rate:['Bad','Okay','Good','Very good'], f1topic:'What is it about?', topics:['Reminders','Voice commands','Suggestions','A problem'],
+  f1note:'Anything else? (optional)', dictate:'Speak instead of typing', send:'Send feedback', f1err:'Choose how the app is working for you first.', f1ok:'Thank you. We received your feedback.',
+  welcomeH:'Never lose track of a dose', welcomeT:'Get reminded at the right time, postpone when you are busy, and see what you took today.', chooseLang:'Language',
+ },
+ ar:{
+  app:'مساعد الأدوية', home:'الرئيسية', meds:'أدويتي', hist:'السجل', acct:'حسابي',
+  morning:'صباح الخير', afternoon:'مساء الخير', evening:'مساء الخير',
+  nextDose:'الجرعة القادمة', dueNow:'موعدها الآن', taken:'أخذته', later:'ذكّرني لاحقًا', allDone:'خلصت جرعات اليوم كلها.', noMeds:'لا توجد أدوية بعد',
+  noMedsT:'أضف دواءك الأول ونذكّرك وقت موعده.', addMed:'إضافة دواء', example:'البدء بأدوية تجريبية',
+  progress:(a,b)=>`${a} من ${b} جرعات مأخوذة اليوم`, slots:['الصباح','الظهر والعصر','المساء'],
+  st:{ taken:t=>`أُخذت ${t}`, due:'موعدها الآن', missed:'فاتت', up:t=>t, post:t=>`تذكير ${t}`, wait:'بانتظار الحفظ' },
+  speak:'تحدّث', other:'English', settings:'الإعدادات',
+  medsH:'أدويتي', medsSub:n=>`${n} أدوية`, timesDay:n=>n===1?'مرة في اليوم':n===2?'مرتين في اليوم':`${N(n)} مرات في اليوم`,
+  forms:{ tablet:'حبوب', capsule:'كبسولات', injection:'إبرة', drops:'قطرة', syrup:'شراب' },
+  units:{ tablet:['حبة','حبة'], capsule:['كبسولة','كبسولة'], injection:['وحدة','وحدة'], drops:['نقطة','نقاط'], syrup:['مل','مل'] },
+  food:{ before:'قبل الأكل', after:'بعد الأكل', any:'أي وقت' },
+  addH:'إضافة دواء', editH:'تعديل الدواء', fName:'اسم الدواء', fNameHint:'اكتب الاسم أو قله بالصوت', fForm:'النوع', fDose:'الجرعة', fFreq:'كم مرة', fTimes:'الأوقات',
+  fTime:n=>`الوقت ${N(n)}`, fFood:'مع الأكل', fColor:'لون مميز', fNotes:'ملاحظات (اختياري)', save:'حفظ الدواء', cancel:'إلغاء', delMed:'حذف الدواء',
+  errName:'اسم الدواء مطلوب.', errTimes:'فيه وقتين متشابهين. غيّر واحد منهم.', errSum:n=>n===1?'فيه مشكلة لازم تنحل قبل الحفظ.':`فيه ${N(n)} مشاكل لازم تنحل قبل الحفظ.`,
+  colors:{ green:'أخضر', blue:'أزرق', orange:'برتقالي', purple:'بنفسجي', red:'أحمر', grey:'رمادي' },
+  added:n=>`تمت إضافة ${n}. نذكّرك في الأوقات اللي حددتها.`, updated:n=>`تم تعديل ${n}.`, deleted:n=>`تم حذف ${n}.`,
+  delQ:n=>`حذف ${n}؟`, delT:'تتوقف تذكيراته، ويبقى سجلك السابق.', del:'حذف', keepIt:'إبقاء',
+  detSched:'المواعيد', detEdit:'تعديل', back:'رجوع',
+  histH:'السجل', histSub:'آخر ٧ أيام', legend:{ all:'كلها مأخوذة', some:'بعضها', none:'ولا وحدة', nodata:'لا جرعات' }, today:'اليوم', noDoses:'لا توجد جرعات في هذا اليوم.',
+  pct:p=>`${N(p)}٪ من الجرعات أُخذت في آخر ٧ أيام`,
+  acctH:'حسابي', yourName:'الاسم', namePh:'مثال: هند', lang:'اللغة', workEnd:'عادةً أخلص شغلي الساعة', sug:'اقتراحات شخصية', sugD:'يقترح وقت التذكير من اختياراتك السابقة.',
+  voice:'الأوامر الصوتية', voiceD:'التحكم بالصوت بدل اللمس.', on:'مفعّل', off:'متوقف', fbRow:'رأيك يهمنا', fbRowD:'قل لنا وش ينفع ووش ما ينفع.',
+  about:'عن التطبيق', aboutD:'الإصدار 1.0 · نموذج مشروع AI418 مجموعة 24', resetAll:'حذف كل بياناتي', resetQ:'حذف كل بياناتك؟', resetT:'تنحذف أدويتك وسجلك من هذا الجوال.',
+  study:'أدوات الدراسة (لفريق البحث فقط)', studyD:'لجلسات اختبار الاستخدام. المشاركون لا يستخدمونها.', sendRem:'إرسال تذكير الآن', fireRem:'إرجاع التذكير المؤجل الآن',
+  offline:'محاكاة انقطاع الإنترنت', histMode:'اختيارات التأجيل السابقة', hm:{ usual:'عادة: «لما أخلص شغلي» ×٣', mixed:'مختلطة: بدون عادة واضحة', none:'لا شيء' }, loadStudy:'تحميل أدوية الدراسة', callouts:'إظهار أرقام التوضيح', fbSaved:n=>`الآراء المحفوظة في هذا الجوال: ${N(n)}`,
+  remH:'حان وقت دوائك', remSched:t=>`موعدها ${t}`, remPost:t=>`مؤجلة من ${t}`, tabletsDose:(n,u)=>`${N(n)} ${u}`,
+  postH:'متى نذكّرك مرة ثانية؟', remindMe:'ذكّرني', o30:'بعد ٣٠ دقيقة', o60:'بعد ساعة', owork:'لما أخلص شغلي', atT:t=>`الساعة ${t}`, atTom:t=>`بكرة الساعة ${t}`,
+  stays:'تبقى الجرعة في قائمة اليوم «مستحقة» حتى يتم أخذها.', setRem:'اضبط التذكير', unsure:'لسنا متأكدين بعد أي وقت يناسبك. اختيارك يساعدنا نتعلّم.',
+  sugTag:'اقتراح', sugQ:t=>`نذكّرك الساعة ${t} مثل الأسبوع الماضي؟`, sugWhy:(o,n)=>`في آخر ٧ أيام كان اختيارك «${o}» ${N(n)} مرات لهذا الدواء.`,
+  sugSet:t=>`ذكّرني الساعة ${t}`, sugOther:'اختيار وقت آخر', closeSug:'إغلاق الاقتراح', helpQ:'هل كان الاقتراح مفيدًا؟', helpful:'مفيد', notHelpful:'غير مفيد', whyQ:'ما المشكلة؟',
+  rTime:'الوقت غير مناسب', rOff:'لا أريد اقتراحات', rElse:'سبب آخر', mThanks:'شكرًا على رأيك.', mTime:t=>`تمام، لن نقترح الساعة ${t} لهذا الدواء مرة ثانية.`, mOff:'أوقفنا الاقتراحات الشخصية. يمكن تشغيلها من «حسابي».', mElse:'شكرًا، حفظنا رأيك.', undo:'تراجع',
+  setH:'تم ضبط التذكير', setT:t=>`سنذكّرك الساعة ${t}.`, done:'تم', change:'تغيير الوقت', cancelRem:'إلغاء التذكير', remCancelled:'ألغينا التذكير. موعد الجرعة الآن.',
+  takenH:'تم الأخذ', takenT:(n,t)=>`${n}، أُخذت الساعة ${t}.`, viewToday:'الرجوع للرئيسية', undoTaken:'تراجع — ما أخذته',
+  undoH:'سُجّلت بالخطأ؟', undoA:(n,t)=>`سُجّل ${n} كمأخوذ الساعة ${t}.`, undoB:'عند التراجع تعود «مستحقة» ونذكّرك مرة ثانية.', yesUndo:'نعم، تراجع', keepTaken:'لا، تبقى مأخوذة', undone:'تم التراجع. موعد الجرعة الآن.',
+  offH:'لم يُحفظ بعد', offT:'لا يوجد اتصال بالإنترنت، فلم نتمكن من حفظ «أخذته». احتفظنا به في الجوال وسنحفظه عند عودة الاتصال.', retry:'إعادة المحاولة', still:'ما زال لا يوجد اتصال. سنحاول تلقائيًا.', savedNow:'رجع الاتصال وانحفظت الجرعة.',
+  vh:'أسمعك…', vhint:'مثال: «أخذته» أو «ذكّرني لاحقًا» أو «لما أخلص شغلي».', stop:'إيقاف', typeIns:'كتابة بدل الصوت', cmd:'الأمر', run:'تنفيذ',
+  heard:x=>`سمعت: «${x}»`, didMean:c=>`هل المقصود: ${c}؟`, yes:'نعم', no:'لا', notCaught:'عذرًا، لم أفهم.', tryAgain:'إعادة المحاولة', useBtns:'استخدام الأزرار',
+  noVoice:'الصوت لا يعمل هنا. افتح التطبيق في Chrome أو Edge على الكمبيوتر، أو اكتب الأمر بدلًا منه.', blockedMic:'الميكروفون غير متاح هنا. افتح التطبيق في Chrome أو Edge، أو اكتب الأمر بدلًا منه.', voiceOff:'الأوامر الصوتية متوقفة. يمكن تشغيلها من «حسابي».', noneDue:'لا توجد جرعة موعدها الآن.',
+  youSaid:x=>`قلت: «${x}».`, rightQ:'هل فهمتك صح؟', noUndo:'لا، تراجع', vThanks:'شكرًا.', vUndone:'تم التراجع. يمكن إعادة المحاولة أو استخدام الأزرار.', sorryNo:'عذرًا. يمكن إعادة المحاولة أو استخدام الأزرار.',
+  c:{ taken:n=>`أخذته — ${n}`, later:'ذكّرني لاحقًا', work:t=>`ذكّرني لما أخلص شغلي (${t})`, '30':t=>`ذكّرني بعد ٣٠ دقيقة (${t})`, '60':t=>`ذكّرني بعد ساعة (${t})`, meds:'فتح أدويتي', home:'فتح الرئيسية' },
+  f1h:'رأيك يهمنا', f1q:'كيف كانت تجربتك مع التطبيق؟', rate:['سيئة','مقبولة','جيدة','ممتازة'], f1topic:'الموضوع', topics:['التذكيرات','الأوامر الصوتية','الاقتراحات','مشكلة'],
+  f1note:'شيء آخر؟ (اختياري)', dictate:'إملاء بالصوت بدل الكتابة', send:'إرسال', f1err:'اختيار التقييم مطلوب أولًا.', f1ok:'شكرًا لك، وصلنا رأيك.',
+  welcomeH:'ولا جرعة تفوتك', welcomeT:'تذكير في الوقت المناسب، وتأجيل لما تكون مشغول، وتشوف وش أخذت اليوم.', chooseLang:'اللغة',
+ }
+};
+const t = k => L[S.lang][k];
+Object.assign(L.en, {
+  appts:'Appointments', svc:'Services', svcMeds:'My medicines', svcAppts:'Appointments', svcHist:'Record', svcFb:'Send feedback', svcAcct:'Profile', svcAdd:'Add medicine',
+  hiName:n=>`Hello, ${n}`, hi:'Hello', nextAppt:'NEXT APPOINTMENT', noAppts:'No appointments yet', noApptsT:'Add your doctor appointments and we will remind you before each one.',
+  apptsH:'My appointments', addAppt:'Add appointment', upcoming:'Upcoming', past:'Past', apptAddH:'Add appointment', apptEditH:'Edit appointment',
+  aTitle:'Clinic or doctor', aPlace:'Hospital or health centre (optional)', aDate:'Date', aTime:'Time', aRemind:'Remind me', rem1d:'1 day before', rem2h:'2 hours before', remNo:'No reminder', aNotes:'Notes (optional)', saveAppt:'Save appointment', delAppt:'Delete appointment',
+  aSugg:['Family medicine','Diabetes clinic','Eye clinic','Dental clinic'], errTitle:'Enter the clinic or doctor.', errDate:'Choose the date.', errATime:'Choose the time.', errPastDate:'This date has passed. Choose today or a later date.',
+  apptAdded:n=>`${n} added. We will remind you before it.`, apptUpdated:n=>`${n} updated.`, apptDeleted:n=>`${n} deleted.`, apptSoon:(n,w)=>`Reminder: ${n} ${w}.`, delApptQ:n=>`Delete ${n}?`, delApptT:'Its reminder will stop.',
+  remChip:{ '1d':'Reminder 1 day before', '2h':'Reminder 2 hours before', none:'No reminder' },
+  signedAs:'Signed in with', logout:'Log out', loggedOut:'You are logged out.',
+  aWelcomeT:'Your medicines and appointments in one place, with reminders at the right time.', createAcc:'Create account', haveAcc:'I already have an account', testAcc:'Research team: open the test account',
+  loginH:'Log in', signupH:'Create account', byPhone:'Mobile number', byEmail:'Email', mobile:'Mobile number', mobileHint:'Saudi number, starts with 5', email:'Email', password:'Password', password2:'Confirm password', pwHint:'At least 8 characters',
+  show:'Show', hide:'Hide', sendCode:'Send code', loginBtn:'Log in', forgot:'Forgot your password?', noAcc:'New here?', yesAcc:'Already have an account?', fullName:'Full name', createBtn:'Create account',
+  otpH:'Enter the code', otpT:p=>`We sent a 4-digit code to ${p}.`, otpDemo:c=>`Prototype: no SMS or email is sent. Your code is ${c}.`, code:'4-digit code', verify:'Verify', resend:'Send a new code', resendIn:n=>`Send a new code in ${n} s`, changeNum:'Change number', codeSent:'A new code was sent.',
+  forgotH:'Reset your password', forgotT:'Enter the email you signed up with. We will send you a code.', resetH:'Choose a new password', newPw:'New password', savePw:'Save password', pwChanged:'Password changed. Log in with your new password.',
+  eName:'Enter your full name.', ePhone:'Enter a Saudi mobile number that starts with 5, for example 512345678.', eEmail:'Enter an email like name@example.com.', ePw:'Use at least 8 characters.', ePw2:'The two passwords do not match.',
+  eLogin:'The email or password is wrong.', eNoPhone:'No account uses this number. Check it, or create an account.', eNoEmail:'No account uses this email.', eTaken:'An account already uses this. Log in instead.', eCode:'That code is not right. Check it and try again.', welcomeName:n=>`Welcome, ${n}.`,
+  resetData:'Delete my medicines and record',
+  notifLabel:'Notification', nowLbl:'now', dismiss:'Dismiss notification', notifDoseT:'Time for your medicine', notifPostT:'Your postponed reminder', notifApptT:'Appointment reminder',
+  sound:'Reminder sound', soundD:'Play a sound and vibrate when a reminder arrives.', noPost:'There is no postponed reminder today.',
+});
+Object.assign(L.ar, {
+  appts:'مواعيدي', svc:'الخدمات', svcMeds:'أدويتي', svcAppts:'مواعيدي', svcHist:'السجل', svcFb:'رأيك يهمنا', svcAcct:'الملف الشخصي', svcAdd:'إضافة دواء',
+  hiName:n=>`أهلًا، ${n}`, hi:'أهلًا', nextAppt:'الموعد القادم', noAppts:'لا توجد مواعيد بعد', noApptsT:'أضف مواعيدك عند الدكتور ونذكّرك قبل كل موعد.',
+  apptsH:'مواعيدي', addAppt:'إضافة موعد', upcoming:'القادمة', past:'السابقة', apptAddH:'إضافة موعد', apptEditH:'تعديل الموعد',
+  aTitle:'العيادة أو الدكتور', aPlace:'المستشفى أو المركز الصحي (اختياري)', aDate:'التاريخ', aTime:'الوقت', aRemind:'ذكّرني', rem1d:'قبل يوم', rem2h:'قبل ساعتين', remNo:'بدون تذكير', aNotes:'ملاحظات (اختياري)', saveAppt:'حفظ الموعد', delAppt:'حذف الموعد',
+  aSugg:['طب الأسرة','عيادة السكر','عيادة العيون','عيادة الأسنان'], errTitle:'اسم العيادة أو الدكتور مطلوب.', errDate:'اختيار التاريخ مطلوب.', errATime:'اختيار الوقت مطلوب.', errPastDate:'هذا التاريخ فات. اختر اليوم أو تاريخًا بعده.',
+  apptAdded:n=>`تمت إضافة ${n}. نذكّرك قبل الموعد.`, apptUpdated:n=>`تم تعديل ${n}.`, apptDeleted:n=>`تم حذف ${n}.`, apptSoon:(n,w)=>`تذكير: ${n} ${w}.`, delApptQ:n=>`حذف ${n}؟`, delApptT:'يتوقف تذكيره.',
+  remChip:{ '1d':'تذكير قبل يوم', '2h':'تذكير قبل ساعتين', none:'بدون تذكير' },
+  signedAs:'مسجّل الدخول بـ', logout:'تسجيل الخروج', loggedOut:'تم تسجيل الخروج.',
+  aWelcomeT:'أدويتك ومواعيدك في مكان واحد، مع تذكير في الوقت المناسب.', createAcc:'إنشاء حساب', haveAcc:'عندي حساب', testAcc:'لفريق البحث: فتح الحساب التجريبي',
+  loginH:'تسجيل الدخول', signupH:'إنشاء حساب', byPhone:'رقم الجوال', byEmail:'البريد الإلكتروني', mobile:'رقم الجوال', mobileHint:'رقم سعودي يبدأ بـ 5', email:'البريد الإلكتروني', password:'كلمة المرور', password2:'تأكيد كلمة المرور', pwHint:'٨ خانات على الأقل',
+  show:'إظهار', hide:'إخفاء', sendCode:'إرسال الرمز', loginBtn:'دخول', forgot:'نسيت كلمة المرور؟', noAcc:'ما عندك حساب؟', yesAcc:'عندك حساب؟', fullName:'الاسم الكامل', createBtn:'إنشاء الحساب',
+  otpH:'أدخل رمز التحقق', otpT:p=>`أرسلنا رمزًا من ٤ أرقام إلى ${p}.`, otpDemo:c=>`نموذج تجريبي: لا تُرسل رسالة حقيقية. الرمز هو ${c}.`, code:'الرمز (٤ أرقام)', verify:'تحقق', resend:'إرسال رمز جديد', resendIn:n=>`إرسال رمز جديد بعد ${N(n)} ث`, changeNum:'تغيير الرقم', codeSent:'تم إرسال رمز جديد.',
+  forgotH:'استعادة كلمة المرور', forgotT:'أدخل البريد اللي سجلت فيه، ونرسل لك رمزًا.', resetH:'كلمة مرور جديدة', newPw:'كلمة المرور الجديدة', savePw:'حفظ كلمة المرور', pwChanged:'تم تغيير كلمة المرور. ادخل بكلمة المرور الجديدة.',
+  eName:'الاسم الكامل مطلوب.', ePhone:'أدخل رقم جوال سعودي يبدأ بـ 5، مثل 512345678.', eEmail:'أدخل بريدًا مثل name@example.com.', ePw:'كلمة المرور لازم تكون ٨ خانات على الأقل.', ePw2:'كلمتا المرور غير متطابقتين.',
+  eLogin:'البريد أو كلمة المرور غير صحيحة.', eNoPhone:'لا يوجد حساب بهذا الرقم. تأكد منه أو أنشئ حسابًا.', eNoEmail:'لا يوجد حساب بهذا البريد.', eTaken:'يوجد حساب مسجل بهذا من قبل. سجّل الدخول بدلًا من ذلك.', eCode:'الرمز غير صحيح. تأكد منه وحاول مرة ثانية.', welcomeName:n=>`أهلًا بك، ${n}.`,
+  resetData:'حذف أدويتي وسجلي',
+  notifLabel:'إشعار', nowLbl:'الآن', dismiss:'إغلاق الإشعار', notifDoseT:'حان وقت دوائك', notifPostT:'تذكيرك المؤجل', notifApptT:'تذكير بموعد',
+  sound:'صوت التذكير', soundD:'تشغيل صوت واهتزاز لما يجي التذكير.', noPost:'لا يوجد تذكير مؤجل اليوم.',
+});
+const COLORS = { green:['#2E7D32','#E6F1E7'], blue:['#1565C0','#E3EEFA'], orange:['#B45309','#FDF0E1'], purple:['#6A3FA0','#F0EAF8'], red:['#B3261E','#FBEDEC'], grey:['#4B544B','#EEF1ED'] };
+const FORMICON = { tablet:'pill', capsule:'capsule', injection:'syringe', drops:'drop', syrup:'bottle' };
+const medIc = (m, big) => `<span class="medic" style="background:${COLORS[m.color][1]};color:${COLORS[m.color][0]}">${ic(FORMICON[m.form])}</span>`;
+const unit = m => { const u = L[S.lang].units[m.form]; return m.amount === 1 ? u[0] : u[1]; };
+const doseTxt = m => t('tabletsDose')(m.amount, unit(m));
+const medName = m => esc(m.name);
+
+/* ============ data: doses ============ */
+const key = (day, id, time) => `${day}|${id}|${time}`;
+function dosesFor(day){
+  const out = [];
+  S.meds.forEach(m => m.times.forEach(tm => out.push({ m, time:tm, k:key(isoDay(day), m.id, tm), when:at(tm, day) })));
+  return out.sort((a,b) => a.when - b.when);
+}
+function status(d){
+  const lg = S.log[d.k];
+  if (lg && lg.s === 'taken') return { s:'taken', at:new Date(lg.at) };
+  if (lg && lg.s === 'wait') return { s:'wait', at:new Date(lg.at) };
+  const p = S.post[d.k]; const n = now();
+  if (p && n < new Date(p.to)) return { s:'post', to:new Date(p.to) };
+  const dueAt = p ? new Date(p.to) : d.when;
+  if (n >= dueAt) return n - dueAt <= 3*3600e3 ? { s:'due' } : { s:'missed' };
+  return { s:'up' };
+}
+const chip = st => {
+  const map = { taken:['c-taken','check',t('st').taken(st.at?T(st.at):'')], due:['c-due','clock',t('st').due], missed:['c-missed','alert',t('st').missed], up:['c-up','clock',''], post:['c-due','bell',t('st').post(st.to?T(st.to):'')], wait:['c-wait','sync',t('st').wait] };
+  const [c,i,txt] = map[st.s]; return txt ? `<span class="chip ${c}">${ic(i)}${txt}</span>` : '';
+};
+
+/* ============ AI layer 1: adaptive suggestion (rule) ============ */
+function suggestion(medId){
+  if (!S.sugOn) return { kind:'off' };
+  const week = Date.now() - 7*864e5;
+  const last = S.hist.filter(h => h.med === medId && new Date(h.at).getTime() >= week).slice(-3).map(h => h.o);
+  const c = {}; last.forEach(o => { if (!S.blocked.includes(medId+':'+o)) c[o] = (c[o]||0) + 1; });
+  const best = Object.entries(c).sort((a,b) => b[1]-a[1])[0];
+  return best && best[1] >= 2 ? { kind:'sure', o:best[0], n:best[1] } : { kind:'unsure' };
+}
+function optTime(o){
+  const n = now();
+  if (o === '30') return new Date(n.getTime() + 30*60e3);
+  if (o === '60') return new Date(n.getTime() + 60*60e3);
+  let w = at(S.workEnd); if (w <= n) w = addDays(w, 1); return w;
+}
+const optLabel = o => ({ '30':t('o30'), '60':t('o60'), 'work':t('owork') })[o];
+const optWhen = o => { const d = optTime(o); return d.getDate() !== now().getDate() ? t('atTom')(T(d)) : t('atT')(T(d)); };
+
+/* ============ AI layer 2: voice command parser ============ */
+const PHR = {
+  taken:{ en:['taken','i took it','took it','i have taken it','i took my pill','done'], ar:['اخذته','اخذتها','اخذت','اخذت الدوا','اخذت الحبه','تم الاخذ','خلاص اخذته'] },
+  later:{ en:['remind me later','later','remind me'], ar:['ذكرني لاحقا','ذكرني بعدين','لاحقا','بعدين','ذكرني'] },
+  work:{ en:['when i finish work','after work','remind me after work','when i finish','after i finish work','remind me when i finish work'], ar:['لما اخلص شغلي','لما اخلص','بعد ما اخلص','بعد ما اخلص شغلي','ذكرني بعد ما اخلص','ذكرني لما اخلص شغلي','بعد الدوام','بعد الشغل','اخلص شغلي'] },
+  '30':{ en:['in 30 minutes','30 minutes','half an hour','in half an hour'], ar:['بعد 30 دقيقه','30 دقيقه','بعد نص ساعه','نص ساعه','بعد ثلاثين دقيقه'] },
+  '60':{ en:['in 1 hour','in one hour','one hour','an hour','in an hour'], ar:['بعد ساعه','ساعه'] },
+  meds:{ en:['my medicines','medicines','open my medicines'], ar:['ادويتي','افتح ادويتي'] },
+  home:{ en:['home','go home'], ar:['الرئيسيه'] },
+};
+function norm(s){ return String(s).toLowerCase().replace(/[ً-ْٰـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي')
+  .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[’']/g,"'").replace(/[^\p{L}\p{N}' ]+/gu,' ').replace(/\s+/g,' ').trim(); }
+function lev(a,b){ const m=a.length,n=b.length; if(!m) return n; if(!n) return m; let p=[...Array(n+1).keys()];
+  for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=c; } return p[n]; }
+function parse(text){
+  const x = norm(text); let best = { intent:null, score:0, len:0 }; if (!x) return best;
+  for (const [intent, langs] of Object.entries(PHR)) for (const ph of [...langs.en, ...langs.ar].map(norm)){
+    let score;
+    if ((' '+x+' ').includes(' '+ph+' ')) score = .6 + .4 * ph.length / x.length;
+    else { const sim = 1 - lev(x, ph) / Math.max(x.length, ph.length);
+      const ws = ph.split(' '), hit = ws.filter(w => x.split(' ').some(v => v===w || (w.length>3 && 1-lev(v,w)/Math.max(v.length,w.length) >= .75))).length;
+      score = Math.max(sim, .85 * hit / ws.length); }
+    if (score > best.score || (score === best.score && ph.length > best.len)) best = { intent, score, len:ph.length };
+  }
+  return best;
+}
+
+/* ============ speech engines ============ */
+let dictation = null, recog = null;
+if (window.claude && claude.use) claude.use('dictation').then(d => { dictation = d; }).catch(()=>{});
+function listen(onText, onFail, onPartial){
+  const lang = S.lang;
+  if (dictation){
+    let got = '';
+    const a = dictation.onPartial(({text}) => onPartial && onPartial(got + text));
+    const b = dictation.onFinal(({text}) => { got += text; onPartial && onPartial(got); dictation.stop(); });
+    const c = dictation.onState(({state, reason}) => { if (state === 'idle'){ a(); b(); c(); got.trim() ? onText(got.trim(), null) : onFail(reason === 'not_granted' ? 'blocked' : reason === 'unavailable' ? 'novoice' : reason === 'stopped' || reason === 'viewer_stopped' ? 'stopped' : 'notcaught'); } });
+    dictation.start({ language: lang }).catch(e => { if (e && e.code === 'unavailable') dictation.start().catch(()=>onFail('novoice')); });
+    return true;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR){ onFail('novoice'); return false; }
+  try{
+    recog = new SR(); recog.lang = lang === 'ar' ? 'ar-SA' : 'en-US'; recog.interimResults = true; recog.maxAlternatives = 3; let done = false;
+    recog.onresult = e => { const r = e.results[e.results.length-1]; onPartial && onPartial(r[0].transcript);
+      if (r.isFinal && !done){ done = true; let pick = { text:r[0].transcript, conf:r[0].confidence, sc:parse(r[0].transcript).score };
+        for (let k=1;k<r.length;k++){ const sc = parse(r[k].transcript).score; if (sc > pick.sc + .1) pick = { text:r[k].transcript, conf:r[k].confidence, sc }; }
+        onText(pick.text, pick.conf); } };
+    recog.onerror = e => { done = true; onFail(e.error === 'not-allowed' || e.error === 'service-not-allowed' ? 'blocked' : e.error === 'no-speech' ? 'notcaught' : 'novoice'); };
+    recog.onend = () => { if (!done) onFail('notcaught'); };
+    recog.start(); return true;
+  }catch(e){ onFail('novoice'); return false; }
+}
+function stopListen(){ try{ if (recog){ recog.onend = recog.onerror = recog.onresult = null; recog.abort(); recog = null; } }catch(e){} try{ dictation && dictation.active() && dictation.stop(); }catch(e){} }
+
+/* ============ reminder notification: banner + sound + vibration ============ */
+let AC = null;
+function unlockAudio(){ try{ AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); }catch(e){} }
+document.addEventListener('pointerdown', unlockAudio);
+function chime(){
+  if (!S.soundOn) return; unlockAudio(); if (!AC) return;
+  const t0 = AC.currentTime + .05;
+  [880, 1175, 1568, 1175, 1568].forEach((f, i) => { const o = AC.createOscillator(), g = AC.createGain(), st = t0 + i * .2;
+    o.type = 'sine'; o.frequency.value = f; g.gain.setValueAtTime(.0001, st); g.gain.exponentialRampToValueAtTime(.35, st + .02); g.gain.exponentialRampToValueAtTime(.0001, st + .38);
+    o.connect(g); g.connect(AC.destination); o.start(st); o.stop(st + .4); });
+  try{ navigator.vibrate && navigator.vibrate([400, 150, 400]); }catch(e){}
+}
+function notify(n){
+  n.id = Date.now(); S.notif = n; renderNotif(); chime();
+  const msg = n.kind === 'appt' ? t('notifApptT') + '. ' + n.text : (n.post ? t('notifPostT') : t('notifDoseT')) + '. ' + medById(n.d.med).name;
+  const la = document.getElementById('liveA'); la.textContent = ''; setTimeout(() => { la.textContent = msg.replace(/<[^>]+>/g,''); }, 50);
+  [15000, 30000].forEach(ms => setTimeout(() => { if (S.notif && S.notif.id === n.id) chime(); }, ms));   /* rings again, like an alarm, until it is opened */
+}
+function renderNotif(){
+  const box = document.getElementById('notifBox'), n = S.notif;
+  if (!n || !S.uid){ box.innerHTML = ''; return; }
+  let title, body;
+  if (n.kind === 'appt'){ title = t('notifApptT'); body = n.text; }
+  else { const m = medById(n.d.med); title = n.post ? t('notifPostT') : t('notifDoseT'); body = `${medName(m)} · ${doseTxt(m)}`; }
+  box.innerHTML = `<div class="notif" role="region" aria-label="${t('notifLabel')}" data-c="29"><button class="nbody" data-act="notifOpen"><span class="logo-s">${ic('pill')}</span>
+    <span><span class="napp">${t('app')} · ${t('nowLbl')}</span><b>${title}</b><span class="nt">${body}</span></span></button>
+    <button class="iconbtn" data-act="notifX" aria-label="${t('dismiss')}">${ic('x')}</button></div>`;
+}
+
+/* ============ helpers ============ */
+function announce(m){ const l = document.getElementById('live'); l.textContent = ''; setTimeout(() => { l.textContent = String(m).replace(/<[^>]+>/g,''); }, 50); }
+function toast(msg, undoFn, kind){ S.toast = { msg, undoFn, kind }; clearTimeout(toast.tm); renderToast(); announce(msg); if (!undoFn) toast.tm = setTimeout(() => { S.toast = null; renderToast(); }, 6000); }
+function logFb(item){ S.feedback.push({ ...item, lang:S.lang, at:new Date().toISOString() }); persist(); }
+const uid = () => Math.random().toString(36).slice(2,9);
+const medById = id => S.meds.find(m => m.id === id);
+const greet = () => { const h = now().getHours(); return h < 12 ? t('morning') : h < 17 ? t('afternoon') : t('evening'); };
+
+function studyMeds(){
+  return [
+    { id:'vitd', name:S.lang==='ar'?'فيتامين د':'Vitamin D', form:'capsule', amount:1, times:['08:00'], food:'after', color:'orange', notes:'' },
+    { id:'bp', name:S.lang==='ar'?'حبة الضغط':'Blood pressure pill', form:'tablet', amount:1, times:['09:00'], food:'any', color:'blue', notes:'' },
+    { id:'iron', name:S.lang==='ar'?'حبة الحديد':'Iron tablet', form:'tablet', amount:1, times:['14:00'], food:'before', color:'red', notes:'' },
+    { id:'dia', name:S.lang==='ar'?'حبة السكر':'Diabetes pill', form:'tablet', amount:1, times:['09:00','21:00'], food:'after', color:'green', notes:'' },
+  ];
+}
+function seedHistory(mode){
+  S.hist = S.hist.filter(h => h.med !== 'bp'); S.blocked = S.blocked.filter(b => !b.startsWith('bp:'));
+  const os = mode === 'usual' ? ['work','work','work'] : mode === 'mixed' ? ['30','work','60'] : [];
+  os.forEach((o,i) => S.hist.push({ med:'bp', o, at:addDays(now(), -(os.length - i) * 2).toISOString() }));
+}
+function loadStudy(){
+  S.meds = studyMeds(); S.log = {}; S.post = {}; S.sugOn = true; S.shownKeys = {};
+  S.appts = [{ id:'a1', title:S.lang==='ar'?'عيادة السكر':'Diabetes clinic', place:S.lang==='ar'?'مركز الرعاية الصحية الأولية':'Primary health care centre', date:isoDay(addDays(now(), 3)), time:'10:30', remind:'1d', notes:'' }];
+  for (let i = 1; i <= 6; i++){ const d = addDays(now(), -i);
+    dosesFor(d).forEach((x, j) => { if ((i + j) % 5 !== 0) S.log[x.k] = { s:'taken', at:new Date(x.when.getTime() + 6*60e3).toISOString() }; }); }
+  seedHistory('usual'); persist();
+}
+
+/* ============ navigation ============ */
+const TABS = [['home','home'],['meds','pill'],['appts','cal'],['acct','user']];
+function go(tab, page=null){ stopListen(); S.tab = tab; S.page = page; S.dialog = null; S.vstat = null; if (location.hash !== '#'+(page ? page.name : tab)) history.replaceState(null,'','#'+(page ? page.name : tab)); render(true); window.scrollTo(0,0); }
+function openLayer(l){ S.lastFocus = document.activeElement; S.layer = l; S.dialog = null; render(true); }
+function closeLayer(){ stopListen(); S.layer = null; S.dialog = null; S.vstat = null; render(true); }
+function openDialog(d){ S.dlgFocus = document.activeElement; S.dialog = d; render(); }
+function closeDialog(){ stopListen(); S.dialog = null; S.voiceUI = null; render(); if (S.dlgFocus && document.contains(S.dlgFocus)) S.dlgFocus.focus(); }
+
+/* ============ dose actions ============ */
+function remindDose(d){ S.layer = { scr:'rem', k:d.k, med:d.m.id, time:d.time }; S.dialog = null; S.vstat = null; S.lastFocus = document.activeElement; render(true); }
+function takeDose(L0, how){
+  const before = { log:S.log[L0.k] ? { ...S.log[L0.k] } : null, post:S.post[L0.k] ? { ...S.post[L0.k] } : null, scr:L0.scr };
+  if (S.offline){ S.log[L0.k] = { s:'wait', at:now().toISOString(), by:how }; delete S.post[L0.k]; persist(); S.layer = { ...L0, scr:'off', before }; render(true); return before; }
+  S.log[L0.k] = { s:'taken', at:now().toISOString(), by:how }; delete S.post[L0.k]; persist(); S.layer = { ...L0, scr:'taken', before }; render(true); return before;
+}
+function postpone(L0, o, how){
+  const before = { log:null, post:S.post[L0.k] ? { ...S.post[L0.k] } : null, scr:'post', histLen:S.hist.length };
+  S.post[L0.k] = { to:optTime(o).toISOString(), o }; S.hist.push({ med:L0.med, o, at:now().toISOString() }); delete S.shownKeys[L0.k+'p'];
+  persist(); S.layer = { ...L0, scr:'set', o, before }; S.dialog = null; render(true); return before;
+}
+function dueDoses(){ return dosesFor(now()).filter(d => status(d).s === 'due'); }
+
+/* ============ views: tabs ============ */
+function topBar(title, backFn){
+  return `<div class="top">${backFn ? `<button class="link" data-act="${backFn}">${ic('back','flip')}${t('back')}</button>` : `<span></span>`}
+    <span class="r"><button class="langbtn" data-act="lang" lang="${S.lang==='ar'?'en':'ar'}" data-c="25">${t('other')}</button></span></div>`;
+}
+function doseRow(d){
+  const st = status(d), m = d.m;
+  return `<button class="dose ${st.s==='missed'?'missed':''}" data-dose="${esc(d.k)}" ${st.s==='missed'?'data-c="10"':''}>
+    ${medIc(m)}<span class="g"><span class="n">${medName(m)}</span><span class="m" style="display:block">${doseTxt(m)} · ${t('food')[m.food]}</span></span>
+    <span class="t"><span>${T(d.when)}</span>${chip(st)}</span></button>`;
+}
+function ring(a, b){ const r = 26, c = 2*Math.PI*r, p = b ? a/b : 0;
+  return `<svg class="ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="${r}" stroke="#E0E6DE"/><circle cx="32" cy="32" r="${r}" stroke="#2E7D32" stroke-dasharray="${c*p} ${c}" transform="rotate(-90 32 32)" stroke-linecap="round"/>
+    <text x="32" y="37" text-anchor="middle" font-size="${String(a).length+String(b).length > 3 ? 12 : 15}" font-weight="700" fill="#1A1F1A">${N(a)}/${N(b)}</text></svg>`; }
+const VIEW = {};
+function nextAppt(){ const n = now(); return [...S.appts].map(a => ({ ...a, when:at(a.time, new Date(a.date+'T00:00')) })).filter(a => a.when >= n).sort((a,b) => a.when - b.when)[0]; }
+function apptCard(a, past){
+  const d = new Date(a.date+'T00:00');
+  const mon = new Intl.DateTimeFormat(loc()+(S.lang==='ar'?'-u-ca-gregory':''),{month:'short'}).format(d);
+  return `<button class="appt ${past?'past':''}" data-appt="${a.id}"><span class="dateblk" aria-hidden="true"><b>${dnum(d)}</b><span>${mon}</span></span>
+    <span class="g"><b style="display:block;font-size:16.5px">${esc(a.title)}</b><span class="muted small" style="display:block">${a.place ? esc(a.place)+' · ' : ''}${esc(gDate(d))} · ${T(a.time)}</span>
+    ${past ? '' : `<span class="chip c-up" style="margin-top:4px">${ic('bell')}${t('remChip')[a.remind]}</span>`}</span>${ic('chev','flip')}</button>`;
+}
+VIEW.home = () => {
+  const initial = (S.name || '•').trim().charAt(0);
+  const head = `${topBar()}<div class="hdr"><span class="avatar" aria-hidden="true">${esc(initial)}</span><div><p class="hello" style="font-weight:700;color:var(--ink);font-size:16px">${S.name ? t('hiName')(esc(S.name)) : t('hi')}</p>
+    <p class="muted small" style="margin:0" data-c="12">${gDate(now())} · ${hDate(now())}</p></div></div><h1 id="h" tabindex="-1" class="sr">${t('home')}</h1>
+    ${S.banner ? `<div class="banner ok" role="status">${ic('check')}<span class="g">${S.banner}</span></div>` : ''}`;
+  const svc = (ico, label, actn, col) => `<button class="svc" data-act="${actn}"><span class="medic" style="background:${COLORS[col][1]};color:${COLORS[col][0]}">${ic(ico)}</span>${label}</button>`;
+  const grid = `<h2 style="margin-top:14px">${t('svc')}</h2><div class="grid" data-c="27">
+    ${svc('pill', t('svcMeds'), 'svcMeds', 'green')}${svc('cal', t('svcAppts'), 'svcAppts', 'blue')}${svc('list', t('svcHist'), 'svcHist', 'orange')}
+    ${svc('plus', t('svcAdd'), 'add', 'green')}${svc('msg', t('svcFb'), 'feedback', 'purple')}${svc('user', t('svcAcct'), 'svcAcct', 'grey')}</div>`;
+  const na = nextAppt();
+  const apptBox = na ? `<h2>${t('nextAppt')}</h2>${apptCard(na)}` : '';
+  if (!S.meds.length) return `${head}<div class="card empty" style="margin-top:10px"><div class="big">${ic('pill')}</div><h2 style="margin-top:0">${t('noMeds')}</h2><p class="muted">${t('noMedsT')}</p>
+    <button class="btn primary" data-act="add">${ic('plus')}${t('addMed')}</button><button class="btn secondary" data-act="example">${ic('flask')}${t('example')}</button></div>${grid}${apptBox}`;
+  const ds = dosesFor(now()), sts = ds.map(status), taken = sts.filter(s => s.s === 'taken').length;
+  const dueI = ds.findIndex((d,i) => sts[i].s === 'due');
+  const ni = dueI >= 0 ? dueI : ds.findIndex((d,i) => sts[i].s === 'up');
+  let next = '';
+  if (ni >= 0){ const d = ds[ni], st = sts[ni], m = d.m;
+    next = `<section class="next" aria-labelledby="nxl" data-c="1"><div class="lbl" id="nxl">${t('nextDose')}</div><div class="nm">${medName(m)}</div>
+      <div>${doseTxt(m)} · ${T(d.when)} ${st.s==='due' ? `<span class="chip">${ic('clock')}${t('dueNow')}</span>` : `<span class="chip">${ic('clock')}${inWords(d.when - now())}</span>`}</div>
+      ${st.s==='due' ? `<div class="row"><button class="btn primary" data-take="${esc(d.k)}" data-c="2">${ic('check')}${t('taken')}</button><button class="btn secondary" data-later="${esc(d.k)}" data-c="3">${ic('bell')}${t('later')}</button></div>` : ''}</section>`;
+  } else next = `<div class="banner ok" style="margin-top:12px">${ic('check')}<span class="g">${t('allDone')}</span></div>`;
+  const slots = [[], [], []]; ds.forEach(d => slots[d.when.getHours() < 12 ? 0 : d.when.getHours() < 17 ? 1 : 2].push(d));
+  return `${head}${next}${grid}${apptBox}
+    <h2>${t('today')}</h2><div class="prog">${ring(taken, ds.length)}<div><b>${t('progress')(N(taken), N(ds.length))}</b></div></div>
+    <div data-c="9">${slots.map((s,i) => s.length ? `<h3 class="slot">${t('slots')[i]}</h3>${s.map(doseRow).join('')}` : '').join('')}</div>`;
+};
+VIEW.appts = () => {
+  const n = now(), all = [...S.appts].map(a => ({ ...a, when:at(a.time, new Date(a.date+'T00:00')) }));
+  const up = all.filter(a => a.when >= n).sort((a,b) => a.when - b.when), past = all.filter(a => a.when < n).sort((a,b) => b.when - a.when);
+  return `${topBar()}<h1 id="h" tabindex="-1">${t('apptsH')}</h1>
+    <button class="btn primary" data-act="addAppt" data-c="28">${ic('plus')}${t('addAppt')}</button>
+    ${!all.length ? `<div class="empty"><div class="big">${ic('cal')}</div><h2>${t('noAppts')}</h2><p class="muted">${t('noApptsT')}</p></div>` : ''}
+    ${up.length ? `<h2>${t('upcoming')}</h2>${up.map(a => apptCard(a)).join('')}` : ''}
+    ${past.length ? `<h2>${t('past')}</h2>${past.map(a => apptCard(a, true)).join('')}` : ''}`;
+};
+function apptForm(){
+  const f = S.aform;
+  const fe = (on, id, msg) => on ? `<p class="err" id="${id}">${ic('alert')}${msg}</p>` : '';
+  return `${topBar(null,'apptCancel')}<h1 id="h" tabindex="-1">${f.id ? t('apptEditH') : t('apptAddH')}</h1>
+  ${f.errs && f.errs.length ? `<div class="errbox" role="alert" tabindex="-1" id="errSum"><b>${t('errSum')(f.errs.length)}</b>${f.errs.map(e => `<div class="err">${ic('alert')}${e}</div>`).join('')}</div>` : ''}
+  <div class="field"><label for="aTitle">${t('aTitle')}</label><input type="text" id="aTitle" value="${esc(f.title)}" ${f.eT?'aria-invalid="true" aria-describedby="aTitleE"':''} autocomplete="off">${fe(f.eT,'aTitleE',t('errTitle'))}
+    <div class="sugg">${t('aSugg').map(n => `<button class="opt" data-apick="${esc(n)}">${esc(n)}</button>`).join('')}</div></div>
+  <div class="field"><label for="aPlace">${t('aPlace')}</label><input type="text" id="aPlace" value="${esc(f.place)}" autocomplete="off"></div>
+  <div class="row"><div class="field" style="flex:1"><label for="aDate">${t('aDate')}</label><input type="date" id="aDate" value="${f.date}" min="${isoDay()}" ${f.eD?'aria-invalid="true" aria-describedby="aDateE"':''}>${fe(f.eD,'aDateE',f.eD===2?t('errPastDate'):t('errDate'))}</div>
+    <div class="field" style="flex:1"><label for="aTime">${t('aTime')}</label><input type="time" id="aTime" value="${f.time}" ${f.eTm?'aria-invalid="true" aria-describedby="aTimeE"':''}>${fe(f.eTm,'aTimeE',t('errATime'))}</div></div>
+  <div class="field"><span class="lab" id="lar">${t('aRemind')}</span><div class="opts" role="radiogroup" aria-labelledby="lar">
+    ${[['1d','rem1d'],['2h','rem2h'],['none','remNo']].map(([k,l]) => `<button class="opt" role="radio" aria-checked="${f.remind===k}" data-arem="${k}">${t(l)}</button>`).join('')}</div></div>
+  <div class="field"><label for="aNotes">${t('aNotes')}</label><textarea id="aNotes">${esc(f.notes)}</textarea></div>
+  <button class="btn primary" data-act="apptSave">${ic('check')}${t('saveAppt')}</button>
+  ${f.id ? `<button class="btn ghost" data-act="apptDel" style="color:var(--danger)">${ic('trash')}${t('delAppt')}</button>` : `<button class="btn secondary" data-act="apptCancel">${t('cancel')}</button>`}`;
+}
+function apptAlerts(){
+  const n = now();
+  S.appts.forEach(a => { if (a.remind === 'none') return; const when = at(a.time, new Date(a.date+'T00:00')); const lead = a.remind === '1d' ? 864e5 : 2*3600e3;
+    const tag = 'appt:'+a.id+':'+a.date+a.time; if (n >= when - lead && n < when && !S.shownKeys[tag]){ S.shownKeys[tag] = true;
+      if (!S.notif) notify({ kind:'appt', text:`${esc(a.title)} · ${(when.getDate() !== n.getDate() ? (S.lang==='ar'?'بكرة الساعة ':'tomorrow at ') : (S.lang==='ar'?'الساعة ':'at ')) + T(when)}` }); } });
+}
+VIEW.meds = () => `${topBar()}<h1 id="h" tabindex="-1">${t('medsH')}</h1><p class="muted">${t('medsSub')(N(S.meds.length))}</p>
+  <button class="btn primary" data-act="add" data-c="26">${ic('plus')}${t('addMed')}</button>
+  ${S.meds.map(m => `<button class="med" data-med="${m.id}">${medIc(m)}<span class="g"><span class="n" style="display:block">${medName(m)}</span>
+    <span class="muted small">${doseTxt(m)} · ${t('timesDay')(m.times.length)} · ${m.times.map(x => T(x)).join(S.lang==='ar'?'، ':', ')}</span></span>${ic('chev','flip')}</button>`).join('')}
+  ${!S.meds.length ? `<div class="empty"><p class="muted">${t('noMedsT')}</p><button class="btn secondary" data-act="example">${ic('flask')}${t('example')}</button></div>` : ''}`;
+VIEW.hist = () => {
+  const days = [...Array(7)].map((_,i) => addDays(now(), -6 + i));
+  let tot = 0, tk = 0;
+  const cells = days.map((d, i) => { const ds = dosesFor(d), past = ds.filter(x => x.when <= now()), a = ds.filter(x => status(x).s === 'taken').length;
+    tot += past.length; tk += a;
+    const kind = !past.length ? 'nodata' : a >= past.length ? 'all' : a > 0 ? 'some' : 'none';
+    const look = { all:['var(--primary)','#fff','check'], some:['var(--warn-soft)','var(--warn)','minus'], none:['var(--danger-soft)','var(--danger)','x'], nodata:['#EEF1ED','var(--muted)','circle'] }[kind];
+    const sel = (6 - i) === S.histDay;
+    return `<button class="day" aria-pressed="${sel}" data-day="${6-i}" aria-label="${esc(gDate(d))}: ${t('legend')[kind]}"><span>${wd(d)}</span><b>${dnum(d)}</b>
+      <span class="dot" style="background:${look[0]};color:${look[1]}">${ic(look[2])}</span></button>`; }).join('');
+  const day = addDays(now(), -S.histDay), list = dosesFor(day);
+  const pct = tot ? Math.round(tk / tot * 100) : 0;
+  return `${topBar(null, S.page ? 'pageBack' : null)}<h1 id="h" tabindex="-1">${t('histH')}</h1><p class="muted">${t('histSub')}</p>
+    <div class="card" style="display:flex;gap:12px;align-items:center">${ring(tk, tot)}<b>${t('pct')(pct)}</b></div>
+    <div class="week" role="group" aria-label="${t('histSub')}">${cells}</div>
+    <div class="legend" aria-hidden="true">${['all','some','none','nodata'].map(k => `<span>${ic({all:'check',some:'minus',none:'x',nodata:'circle'}[k],'s')}${t('legend')[k]}</span>`).join('')}</div>
+    <h2>${S.histDay === 0 ? t('today') : esc(gDate(day))}</h2>
+    ${list.length ? list.map(d => { const st = status(d); return `<div class="dose" style="cursor:default">${medIc(d.m)}<span class="g"><span class="n">${medName(d.m)}</span><span class="m" style="display:block">${T(d.when)}</span></span><span class="t">${chip(st) || `<span class="chip c-up">${ic('clock')}${T(d.when)}</span>`}</span></div>`; }).join('') : `<p class="muted">${t('noDoses')}</p>`}`;
+};
+const sw = (id, on, label, desc, c) => `<div class="srow" ${c?`data-c="${c}"`:''}><span class="g"><b id="l-${id}">${label}</b><small id="d-${id}">${desc}</small></span>
+  <span class="swst" aria-hidden="true">${on?t('on'):t('off')}</span><button class="switch" role="switch" aria-checked="${on}" aria-labelledby="l-${id}" aria-describedby="d-${id}" data-sw="${id}"></button></div>`;
+VIEW.acct = () => { const acc = ROOT.accounts.find(a => a.id === S.uid) || {}; return `${topBar()}<h1 id="h" tabindex="-1">${t('acctH')}</h1>
+  <div class="set"><div class="srow"><span class="avatar" aria-hidden="true">${esc((S.name||'•').charAt(0))}</span><span class="g"><b>${esc(S.name)}</b><small>${t('signedAs')} <bdi>${esc(acc.phone ? '+966 ' + acc.phone : acc.email || '')}</bdi></small></span></div></div>
+  <div class="set"><div class="srow"><span class="g"><label for="nameIn"><b>${t('yourName')}</b></label><input type="text" id="nameIn" value="${esc(S.name)}" placeholder="${t('namePh')}" style="margin-top:6px" autocomplete="given-name"></span></div>
+    <div class="srow" style="display:block"><b id="lq">${t('lang')}</b><div class="opts" role="radiogroup" aria-labelledby="lq" style="margin-top:8px">
+      <button class="opt" role="radio" lang="ar" aria-checked="${S.lang==='ar'}" data-setlang="ar">العربية</button><button class="opt" role="radio" lang="en" aria-checked="${S.lang==='en'}" data-setlang="en">English</button></div></div>
+    <div class="srow"><span class="g"><label for="workIn"><b>${t('workEnd')}</b></label></span><input type="time" id="workIn" value="${S.workEnd}" style="width:140px"></div></div>
+  <div class="set">${sw('sug', S.sugOn, t('sug'), t('sugD'), 17)}${sw('voice', S.voiceOn, t('voice'), t('voiceD'))}${sw('sound', S.soundOn, t('sound'), t('soundD'))}</div>
+  <div class="set"><button class="srow" data-act="feedback" data-c="22"><span class="medic" style="background:var(--primary-soft);color:var(--primary-dark)">${ic('msg')}</span><span class="g"><b>${t('fbRow')}</b><small>${t('fbRowD')}</small></span>${ic('chev','flip')}</button>
+    <div class="srow"><span class="medic" style="background:#EEF1ED;color:var(--muted)">${ic('info')}</span><span class="g"><b>${t('about')}</b><small>${t('aboutD')}</small></span></div></div>
+  ${S.uid === 'test-hind' ? `<div class="study"><b>${t('study')}</b><p class="muted small">${t('studyD')}</p>
+    <button class="btn secondary" data-act="loadStudy">${ic('flask')}${t('loadStudy')}</button>
+    <button class="btn secondary" data-act="sendRem">${ic('bell')}${t('sendRem')}</button>
+    <button class="btn secondary" data-act="fireRem">${ic('clock')}${t('fireRem')}</button>
+    <fieldset style="border:none;padding:0;margin:6px 0"><legend style="font-weight:700;font-size:15px">${t('histMode')}</legend>
+      ${['usual','mixed','none'].map(k => `<label><input type="radio" name="hm" value="${k}" ${S.histModeSel===k?'checked':''}> ${t('hm')[k]}</label>`).join('')}</fieldset>
+    <label><input type="checkbox" id="offIn" ${S.offline?'checked':''}> ${t('offline')}</label>
+    <label><input type="checkbox" id="annIn" ${document.body.classList.contains('annot')?'checked':''}> ${t('callouts')}</label>
+    <p class="small" style="margin:6px 0 0">${t('fbSaved')(S.feedback.length)}</p></div>` : ''}
+  <button class="btn secondary" data-act="logout">${ic('logout','flip')}${t('logout')}</button>
+  <button class="btn ghost" data-act="resetAll" style="color:var(--danger)">${ic('trash')}${t('resetData')}</button>`; };
+
+/* ============ views: pages ============ */
+function formPage(){
+  const f = S.form;
+  const amtTxt = t('tabletsDose')(f.amount, L[S.lang].units[f.form][f.amount===1?0:1]);
+  const nameList = (S.lang==='ar' ? ['حبة الضغط','حبة السكر','فيتامين د','حبة الحديد','إنسولين','أسبرين','أوميبرازول','قطرة العين'] : ['Blood pressure pill','Diabetes pill','Vitamin D','Iron tablet','Insulin','Aspirin','Omeprazole','Eye drops'])
+    .filter(n => !f.name || norm(n).includes(norm(f.name))).slice(0,4);
+  return `${topBar(null, 'formCancel')}<h1 id="h" tabindex="-1">${f.id ? t('editH') : t('addH')}</h1>
+  ${f.errs && f.errs.length ? `<div class="errbox" role="alert" tabindex="-1" id="errSum"><b>${t('errSum')(f.errs.length)}</b>${f.errs.map(e => `<div class="err">${ic('alert')}${e}</div>`).join('')}</div>` : ''}
+  <div class="field"><label for="fName">${t('fName')}</label>
+    <div class="inwrap"><input type="text" id="fName" value="${esc(f.name)}" aria-describedby="fNameH${f.errName?' fNameE':''}" ${f.errName?'aria-invalid="true"':''} autocomplete="off">
+    <button class="micbtn" data-act="dictName" aria-label="${t('fNameHint')}">${ic('mic')}</button></div>
+    <p class="muted small" id="fNameH" style="margin:4px 0 0">${t('fNameHint')}</p>${f.errName ? `<p class="err" id="fNameE">${ic('alert')}${t('errName')}</p>` : ''}
+    <div class="sugg">${nameList.map(n => `<button class="opt" data-pick="${esc(n)}">${esc(n)}</button>`).join('')}</div></div>
+  <div class="field"><span class="lab" id="lf">${t('fForm')}</span><div class="opts" role="radiogroup" aria-labelledby="lf">
+    ${Object.keys(FORMICON).map(k => `<button class="opt" role="radio" aria-checked="${f.form===k}" data-form="${k}">${ic(FORMICON[k],'s')}${t('forms')[k]}</button>`).join('')}</div></div>
+  <div class="field"><span class="lab" id="ld">${t('fDose')}</span><div class="stepper" role="group" aria-labelledby="ld">
+    <button data-amt="-1" aria-label="−">−</button><output aria-live="polite">${amtTxt}</output><button data-amt="1" aria-label="+">+</button></div></div>
+  <div class="field"><span class="lab" id="lq2">${t('fFreq')}</span><div class="opts" role="radiogroup" aria-labelledby="lq2">
+    ${[1,2,3].map(n => `<button class="opt" role="radio" aria-checked="${f.times.length===n}" data-freq="${n}">${t('timesDay')(n)}</button>`).join('')}</div></div>
+  <div class="field"><span class="lab">${t('fTimes')}</span>${f.times.map((x,i) => `<label style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="min-width:70px">${t('fTime')(i+1)}</span>
+    <input type="time" data-ti="${i}" value="${x}" ${f.errTimes?'aria-invalid="true"':''} style="flex:1"></label>`).join('')}${f.errTimes ? `<p class="err">${ic('alert')}${t('errTimes')}</p>` : ''}</div>
+  <div class="field"><span class="lab" id="lfo">${t('fFood')}</span><div class="opts" role="radiogroup" aria-labelledby="lfo">
+    ${['before','after','any'].map(k => `<button class="opt" role="radio" aria-checked="${f.food===k}" data-food="${k}">${t('food')[k]}</button>`).join('')}</div></div>
+  <div class="field"><span class="lab" id="lc">${t('fColor')}</span><div class="opts" role="radiogroup" aria-labelledby="lc">
+    ${Object.keys(COLORS).map(k => `<button class="swatch" role="radio" aria-checked="${f.color===k}" aria-label="${t('colors')[k]}" data-color="${k}" style="background:${COLORS[k][0]}">${f.color===k?ic('check'):''}</button>`).join('')}</div></div>
+  <div class="field"><label for="fNotes">${t('fNotes')}</label><textarea id="fNotes">${esc(f.notes)}</textarea></div>
+  <button class="btn primary" data-act="formSave">${ic('check')}${t('save')}</button>
+  ${f.id ? `<button class="btn ghost" data-act="formDel" style="color:var(--danger)">${ic('trash')}${t('delMed')}</button>` : `<button class="btn secondary" data-act="formCancel">${t('cancel')}</button>`}`;
+}
+function medPage(){
+  const m = medById(S.page.id); if (!m) return VIEW.meds();
+  return `${topBar(null,'pageBack')}<div class="bigmed">${medIc(m)}<div><h1 id="h" tabindex="-1" style="margin:0;font-size:22px">${medName(m)}</h1><div class="muted">${doseTxt(m)} · ${t('forms')[m.form]}</div></div></div>
+    <h2>${t('detSched')}</h2><div class="set">${m.times.map(x => `<div class="srow">${ic('clock')}<span class="g"><b>${T(x)}</b><small>${t('food')[m.food]}</small></span></div>`).join('')}</div>
+    ${m.notes ? `<p class="note">${ic('info')}<span>${esc(m.notes)}</span></p>` : ''}
+    <button class="btn primary" data-act="editMed">${ic('edit')}${t('detEdit')}</button>
+    <button class="btn ghost" data-act="formDel" style="color:var(--danger)">${ic('trash')}${t('delMed')}</button>`;
+}
+function fbPage(){
+  const f = S.f1 || (S.f1 = { rate:null, topic:null, note:'', err:false, sent:false });
+  if (f.sent) return `${topBar(null,'pageBack')}<div class="center"><div class="hero ok">${ic('check')}</div><h1 id="h" tabindex="-1" role="status">${t('f1ok')}</h1></div><button class="btn primary" data-act="pageBack">${t('back')}</button>`;
+  return `${topBar(null,'pageBack')}<h1 id="h" tabindex="-1">${t('f1h')}</h1>
+    <div role="radiogroup" aria-labelledby="rq" ${f.err?'aria-describedby="rerr"':''} class="field"><span class="lab" id="rq">${t('f1q')}</span>${f.err ? `<p class="err" id="rerr">${ic('alert')}${t('f1err')}</p>` : ''}
+      <div class="opts">${t('rate').map((r,i) => `<button class="opt" role="radio" aria-checked="${f.rate===i}" data-rate="${i}"><span aria-hidden="true">${['☹️','😐','🙂','😀'][i]}</span>${r}</button>`).join('')}</div></div>
+    <div role="group" aria-labelledby="tq" class="field"><span class="lab" id="tq">${t('f1topic')}</span><div class="opts">${t('topics').map((r,i) => `<button class="opt" aria-pressed="${f.topic===i}" data-topic="${i}">${r}</button>`).join('')}</div></div>
+    <div class="field"><label for="fbNote">${t('f1note')}</label><textarea id="fbNote">${esc(f.note)}</textarea></div>
+    <button class="btn secondary" data-act="dictNote">${ic('mic')}${t('dictate')}</button>
+    <button class="btn primary" data-act="sendFb">${ic('msg')}${t('send')}</button>`;
+}
+
+/* ============ views: reminder layer ============ */
+function vstat(){
+  const v = S.vstat; if (!v) return '';
+  if (v.ok) return `<div class="vstat" role="status">${ic('mic','s')} ${t('vThanks')}</div>`;
+  return `<div class="vstat" role="status" data-c="24"><div>${ic('mic','s')} ${esc(t('youSaid')(v.text))}</div><div class="q"><span>${t('rightQ')}</span>
+    <button class="opt" data-act="vyes">${ic('up','s')}${t('yes')}</button><button class="opt" data-act="vno">${ic('undo','s flip')}${t('noUndo')}</button></div></div>`;
+}
+function layerHTML(){
+  const L0 = S.layer; if (!L0) return '';
+  const m = medById(L0.med); if (!m){ S.layer = null; return ''; }
+  const sched = at(L0.time), post = S.post[L0.k], lg = S.log[L0.k];
+  const bigmed = c => `<div class="bigmed" ${c?`data-c="${c}"`:''}>${medIc(m)}<div><div class="n">${medName(m)}</div><div>${doseTxt(m)} · ${t('food')[m.food]}</div>
+    <div class="muted small">${post ? t('remPost')(T(sched)) : t('remSched')(T(sched))}</div></div></div>`;
+  const head = (back) => `<div class="top">${back ? `<button class="link" data-act="${back}" data-c="6">${ic('back','flip')}${back==='lyBack'?t('back'):t('back')}</button>` : `<button class="iconbtn" data-act="lyClose" aria-label="${t('home')}">${ic('x')}</button>`}
+    <span class="r"><button class="langbtn" data-act="lang" lang="${S.lang==='ar'?'en':'ar'}">${t('other')}</button></span></div>`;
+  let body = '';
+  const micB = `<button class="btn ghost" data-act="mic" data-c="13" style="text-decoration:none;border:2px dashed var(--line);color:var(--ink)">${ic('mic')}${t('speak')} · <span class="muted small" style="font-weight:400">${t('vhint')}</span></button>`;
+  switch (L0.scr){
+    case 'rem': body = `${head()}${S.banner ? `<div class="banner ok" role="status">${ic('check')}<span class="g">${S.banner}</span></div>` : ''}${vstat()}
+      <div class="center"><div class="hero ok">${ic('bell')}</div></div><h1 id="h" tabindex="-1" class="center">${t('remH')}</h1>${bigmed(1)}
+      <button class="btn primary" data-act="lyTake" data-c="2">${ic('check')}${t('taken')}</button>
+      <button class="btn secondary" data-act="lyLater" data-c="3">${ic('bell')}${t('later')}</button>${micB}`; break;
+    case 'post': { const sg = suggestion(m.id), sel = L0.choice || (sg.kind==='sure' ? sg.o : '30');
+      body = `${head('lyBackRem')}${vstat()}<h1 id="h" tabindex="-1">${t('postH')}</h1><p class="muted">${medName(m)} · ${T(sched)}</p>
+      ${sg.kind==='unsure' ? `<div class="banner info" role="status" data-c="23">${ic('info')}<span class="g">${t('unsure')}</span></div>` : ''}
+      <fieldset style="border:none;padding:0;margin:0 0 6px"><legend style="font-weight:700;margin-bottom:8px">${t('remindMe')}</legend>
+      ${['30','60','work'].map(o => `<label class="radio" ${o==='work'?'data-c="4"':''}><input type="radio" name="when" value="${o}" ${o===sel?'checked':''}><span>${optLabel(o)}<small>${optWhen(o)}</small></span></label>`).join('')}</fieldset>
+      <p class="note" data-c="5">${ic('info')}<span>${t('stays')}</span></p>
+      <button class="btn primary" data-act="lySet">${ic('bell')}${t('setRem')}</button>${micB}`; break; }
+    case 'set': body = `${head()}${vstat()}<div class="center" data-c="18"><div class="hero ok">${ic('bell')}</div><h1 id="h" tabindex="-1">${t('setH')}</h1>
+      <p role="status" style="font-size:19px;font-weight:700">${t('setT')(T(new Date(post ? post.to : optTime(L0.o||'work'))))}</p><p class="muted">${t('stays')}</p></div>
+      <button class="btn primary" data-act="lyClose">${ic('check')}${t('done')}</button>
+      <div class="row"><button class="btn secondary" data-act="lyChange">${ic('clock')}${t('change')}</button><button class="btn secondary" data-act="lyCancelRem">${ic('undo','flip')}${t('cancelRem')}</button></div>`; break;
+    case 'taken': body = `${head()}${vstat()}<div class="center" data-c="7"><div class="hero ok">${ic('check')}</div><h1 id="h" tabindex="-1">${t('takenH')}</h1>
+      <p>${t('takenT')(medName(m), T(new Date(lg ? lg.at : Date.now())))}</p></div>
+      <button class="btn primary" data-act="lyClose">${ic('home')}${t('viewToday')}</button>
+      <button class="btn secondary" data-act="lyUndoAsk" data-c="8">${ic('undo','flip')}${t('undoTaken')}</button>`; break;
+    case 'undo': body = `${head('lyBackTaken')}<div class="center"><div class="hero bad">${ic('alert')}</div><h1 id="h" tabindex="-1">${t('undoH')}</h1></div>
+      <div class="card" data-c="11" style="margin-bottom:16px"><p>${t('undoA')(medName(m), T(new Date(lg ? lg.at : Date.now())))}</p><p style="margin:0">${t('undoB')}</p></div>
+      <button class="btn danger" data-act="lyUndo">${ic('undo','flip')}${t('yesUndo')}</button><button class="btn secondary" data-act="lyBackTaken">${ic('check')}${t('keepTaken')}</button>`; break;
+    case 'off': body = `${head()}<div class="center" data-c="20"><div class="hero warn">${ic('wifioff')}</div><h1 id="h" tabindex="-1">${t('offH')}</h1></div><p>${t('offT')}</p>
+      ${L0.retried ? `<div class="banner warn" role="alert">${ic('alert')}<span class="g">${t('still')}</span></div>` : ''}
+      <button class="btn primary" data-act="lyRetry">${ic('sync')}${t('retry')}</button><button class="btn secondary" data-act="lyClose">${ic('home')}${t('viewToday')}</button>`; break;
+  }
+  return `<div class="layer ${L0.scr==='rem'?'alarm':''}" role="region" aria-label="${t('remH')}"><div class="view">${body}</div></div>`;
+}
+
+/* ============ dialogs ============ */
+function dialogHTML(){
+  if (S.dialog === 'sug'){
+    const L0 = S.layer, m = medById(L0.med), sg = suggestion(m.id), f = S.fbState, o = sg.o || S.fbOpt;
+    if (sg.kind !== 'sure' && !['time','off','else'].includes(f)){ S.dialog = null; return ''; }
+    let fb = `<div class="fb" data-c="16"><p class="q" id="fbq">${t('helpQ')}</p><div class="opts" role="group" aria-labelledby="fbq">
+      <button class="opt" aria-pressed="${f==='up'}" data-act="fbUp">${ic('up','s')}${t('helpful')}</button><button class="opt" aria-pressed="${!!f && f!=='up'}" data-act="fbDown">${ic('down','s')}${t('notHelpful')}</button></div>`;
+    if (f === 'up') fb += `<p role="status" style="margin-top:8px">${t('mThanks')}</p>`;
+    if (f === 'down') fb += `<p class="q" id="wq" style="margin-top:10px">${t('whyQ')}</p><div class="opts" role="group" aria-labelledby="wq"><button class="opt" data-reason="time">${t('rTime')}</button><button class="opt" data-reason="off">${t('rOff')}</button><button class="opt" data-reason="else">${t('rElse')}</button></div>`;
+    if (['time','off','else'].includes(f)) fb += `<div class="banner ok" role="status">${ic('check')}<span class="g">${f==='time'?t('mTime')(T(optTime(S.fbOpt))):f==='off'?t('mOff'):t('mElse')}</span>${f!=='else'?`<button class="link" data-act="fbUndo">${ic('undo','s flip')}${t('undo')}</button>`:''}</div>`;
+    fb += '</div>';
+    const sure = sg.kind === 'sure';
+    return `<div class="scrim" data-act="dlgClose"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dh" data-c="14">
+      <button class="iconbtn x" data-act="dlgClose" aria-label="${t('closeSug')}">${ic('x')}</button><span class="tag">${ic('spark')}${t('sugTag')}</span>
+      <h2 id="dh" tabindex="-1">${sure ? t('sugQ')(T(optTime(o))) : t('sugTag')}</h2>
+      ${sure ? `<p class="why" data-c="15">${t('sugWhy')(optLabel(o), sg.n)}</p><button class="btn primary" data-act="sugSet">${ic('bell')}${t('sugSet')(T(optTime(o)))}</button>` : ''}
+      <button class="btn secondary" data-act="dlgClose">${ic('clock')}${t('sugOther')}</button>${fb}</div>`;
+  }
+  if (S.dialog === 'voice'){
+    const v = S.voiceUI || { mode:'fail', why:'novoice' };
+    const typeBox = `<form id="typeForm" style="margin-top:6px"><div class="field"><label for="typeIn">${t('cmd')}</label><input type="text" id="typeIn" autocomplete="off" lang="${S.lang}"></div><button class="btn primary" type="submit">${t('run')}</button></form>`;
+    let body;
+    if (v.mode === 'listen') body = `<div class="pulse" aria-hidden="true">${ic('mic')}</div><h2 id="dh" tabindex="-1" class="center" style="padding:0">${t('vh')}</h2><p class="why center">${t('vhint')}</p>
+      <div class="heard" id="heardTxt" aria-live="polite">${esc(v.partial || '…')}</div>
+      ${v.typed ? typeBox : `<div class="row"><button class="btn secondary" data-act="vstop">${t('stop')}</button><button class="btn secondary" data-act="vtype">${ic('kbd')}${t('typeIns')}</button></div>`}`;
+    else if (v.mode === 'confirm') body = `<span class="tag">${ic('mic')}${t('speak')}</span><p class="why">${esc(t('heard')(v.text))}</p><h2 id="dh" tabindex="-1" data-c="19">${t('didMean')(cmdLabel(v.intent))}</h2>
+      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="vconfYes">${ic('check')}${t('yes')}</button><button class="btn secondary" data-act="vconfNo">${ic('x')}${t('no')}</button></div>`;
+    else if (v.mode === 'sorry') body = `<h2 id="dh" tabindex="-1">${t('sorryNo')}</h2><div class="row" style="margin-top:12px"><button class="btn primary" data-act="vagain">${ic('mic')}${t('tryAgain')}</button><button class="btn secondary" data-act="dlgClose">${t('useBtns')}</button></div>`;
+    else { const msg = { blocked:t('blockedMic'), novoice:t('noVoice'), off:t('voiceOff'), nodue:t('noneDue') }[v.why] || t('notCaught');
+      body = `<div class="hero warn" style="width:64px;height:64px;margin-top:2px">${ic('mic')}</div><h2 id="dh" tabindex="-1" role="alert">${msg}</h2>${v.text ? `<p class="why">${esc(t('heard')(v.text))}</p>` : ''}
+      ${v.why==='notcaught' ? `<div class="row" style="margin-top:12px"><button class="btn primary" data-act="vagain">${ic('mic')}${t('tryAgain')}</button><button class="btn secondary" data-act="dlgClose">${t('useBtns')}</button></div><button class="link" data-act="vtype">${ic('kbd','s')}${t('typeIns')}</button>`
+        : ['off','nodue'].includes(v.why) ? `<button class="btn secondary" data-act="dlgClose">${t('useBtns')}</button>` : typeBox}`; }
+    return `<div class="scrim" data-act="dlgClose"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dh"><button class="iconbtn x" data-act="dlgClose" aria-label="${t('stop')}">${ic('x')}</button>${body}</div>`;
+  }
+  if (S.dialog === 'delAppt'){ const a = S.appts.find(x => x.id === S.aform.id);
+    return `<div class="scrim" data-act="dlgClose"></div><div class="sheet" role="alertdialog" aria-modal="true" aria-labelledby="dh" aria-describedby="dd">
+      <div class="hero bad" style="width:64px;height:64px;margin-top:2px">${ic('trash')}</div><h2 id="dh" tabindex="-1">${t('delApptQ')(esc(a.title))}</h2><p id="dd" class="muted">${t('delApptT')}</p>
+      <button class="btn danger" data-act="delApptYes">${ic('trash')}${t('del')}</button><button class="btn secondary" data-act="dlgClose">${t('keepIt')}</button></div>`; }
+  if (S.dialog === 'del' || S.dialog === 'reset'){
+    const m = S.dialog === 'del' ? medById(S.form ? S.form.id : S.page.id) : null;
+    return `<div class="scrim" data-act="dlgClose"></div><div class="sheet" role="alertdialog" aria-modal="true" aria-labelledby="dh" aria-describedby="dd">
+      <div class="hero bad" style="width:64px;height:64px;margin-top:2px">${ic('trash')}</div><h2 id="dh" tabindex="-1">${m ? t('delQ')(medName(m)) : t('resetQ')}</h2><p id="dd" class="muted">${m ? t('delT') : t('resetT')}</p>
+      <button class="btn danger" data-act="${m ? 'delYes' : 'resetYes'}">${ic('trash')}${t('del')}</button><button class="btn secondary" data-act="dlgClose">${t('keepIt')}</button></div>`;
+  }
+  return '';
+}
+function cmdLabel(i){ const c = L[S.lang].c[i]; const d = voiceTarget();
+  if (i === 'taken') return c(d ? medName(medById(d.med)) : '');
+  return typeof c === 'function' ? c(T(optTime(i))) : c; }
+
+/* ============ voice flow ============ */
+function voiceTarget(){
+  if (S.layer) return S.layer;
+  const d = dueDoses()[0]; return d ? { k:d.k, med:d.m.id, time:d.time, scr:'rem' } : null;
+}
+function startVoice(){
+  S.voiceUI = { mode:'listen', partial:'' };
+  listen((text, conf) => heard(text, conf), why => { if (why === 'stopped') return; if (S.voiceUI) { S.voiceUI = { mode:'fail', why }; render(); } },
+    p => { if (S.voiceUI){ S.voiceUI.partial = p; const el = document.getElementById('heardTxt'); if (el) el.textContent = p || '…'; } });
+}
+function heard(text, conf){
+  const p = parse(text);
+  if (p.intent && p.score >= .8 && (conf == null || conf >= .45)){ stopListen(); S.dialog = null; S.voiceUI = null; doIntent(p.intent, text); }
+  else if (p.intent && p.score >= .45){ S.voiceUI = { mode:'confirm', text, intent:p.intent }; render(); }
+  else { S.voiceUI = { mode:'fail', why:'notcaught', text }; render(); }
+}
+function doIntent(intent, text){
+  logFb({ type:'voice', heard:text, intent });
+  if (intent === 'meds'){ S.layer = null; return go('meds'); }
+  if (intent === 'home'){ S.layer = null; return go('home'); }
+  const tg = voiceTarget();
+  if (!tg){ S.voiceUI = { mode:'fail', why:'nodue' }; S.dialog = 'voice'; return render(); }
+  const snap = { log:S.log[tg.k] ? { ...S.log[tg.k] } : null, post:S.post[tg.k] ? { ...S.post[tg.k] } : null, layer:S.layer ? { ...S.layer } : null, histLen:S.hist.length, tab:S.tab };
+  if (!S.layer) S.layer = { ...tg };
+  if (intent === 'taken') takeDose(S.layer, 'voice');
+  else if (intent === 'later'){ S.layer = { ...S.layer, scr:'post' }; S.dialog = null; render(true); }
+  else postpone(S.layer, intent, 'voice');
+  S.vstat = { text, snap, k:tg.k }; render();
+}
+
+/* ============ render ============ */
+const fabBox = document.getElementById('fabBox'), view = document.getElementById('view'), tabs = document.getElementById('tabs'), layer = document.getElementById('layer'), dlg = document.getElementById('dlg'), dev = document.getElementById('dev');
+let first = true;
+function render(focusH){
+  document.documentElement.lang = S.lang; dev.lang = S.lang; dev.dir = S.lang === 'ar' ? 'rtl' : 'ltr';
+  if (!S.uid){ view.innerHTML = authView(); fabBox.innerHTML = ''; tabs.hidden = true; layer.innerHTML = ''; dlg.innerHTML = ''; [view].forEach(el => el.removeAttribute('inert')); renderToast(); if (focusH && !first) focusHeading(view); first = false; wireAuth(); return; }
+  tabs.hidden = false;
+  const PG = { add:formPage, med:medPage, fb:fbPage, hist:VIEW.hist, appt:apptForm };
+  const pg = S.page ? PG[S.page.name]() : VIEW[S.tab]();
+  view.innerHTML = pg; fabBox.innerHTML = (!S.page && !S.layer && S.tab === 'home' && S.meds.length) ? `<button class="fab" data-act="mic" data-c="13">${ic('mic')}${t('speak')}</button>` : '';
+  tabs.innerHTML = `<div class="navbrand">${ic('pill')}${t('app')}</div>` + TABS.map(([k,i]) => `<button data-tab="${k}" ${S.tab===k?'aria-current="page"':''}><span class="tab-ic">${ic(i)}</span>${t(k)}</button>`).join('');
+  layer.innerHTML = layerHTML(); dlg.innerHTML = dialogHTML();
+  const blockMain = !!S.layer, blockAll = !!S.dialog;
+  [view, tabs, fabBox].forEach(el => (blockMain || blockAll) ? el.setAttribute('inert','') : el.removeAttribute('inert'));
+  const ly = layer.firstElementChild; if (ly) blockAll ? ly.setAttribute('inert','') : ly.removeAttribute('inert');
+  if (S.dialog){ const ti = document.getElementById('typeIn'); if (ti && S.voiceUI && S.voiceUI.focusType){ ti.focus(); S.voiceUI.focusType = false; } else { const h = dlg.querySelector('#dh'); h && h.focus(); } }
+  else if (focusH && !first) focusHeading(ly || view);
+  first = false;
+  wire(); renderToast(); renderNotif();
+}
+function focusHeading(root){ const h = root.querySelector('#h'); if (h){ h.tabIndex = -1; h.focus(); } }
+function renderToast(){ const tb = document.getElementById('toastBox');
+  tb.innerHTML = S.toast ? `<div class="toast" role="${S.toast.kind==='err'?'alert':'status'}">${ic(S.toast.kind==='err'?'alert':S.toast.kind==='info'?'info':S.toast.kind==='bell'?'bell':'check')}<span class="g">${S.toast.msg}</span>${S.toast.undoFn ? `<button data-act="toastUndo">${t('undo')}</button>` : ''}<button data-act="toastX" aria-label="${t('stop')}">${ic('x','s')}</button></div>` : ''; }
+function authView(){
+  const A = S.auth, E = A.errs || {};
+  const lang = `<div class="top"><span>${['login','signup','forgot','otp','reset'].includes(A.scr) ? `<button class="link" data-au="back">${ic('back','flip')}${t('back')}</button>` : ''}</span><span class="r"><button class="langbtn" data-act="lang" lang="${S.lang==='ar'?'en':'ar'}">${t('other')}</button></span></div>`;
+  const err = k => E[k] ? `<p class="err" id="e-${k}">${ic('alert')}${E[k]}</p>` : '';
+  const inv = k => E[k] ? `aria-invalid="true" aria-describedby="e-${k}"` : '';
+  const seg = `<div class="seg" role="radiogroup" aria-label="${t('loginH')}"><button role="radio" aria-checked="${A.method==='phone'}" data-au="mPhone">${ic('phone','s')}${t('byPhone')}</button><button role="radio" aria-checked="${A.method==='email'}" data-au="mEmail">${ic('mail','s')}${t('byEmail')}</button></div>`;
+  const phoneF = `<div class="field"><label for="auPhone">${t('mobile')}</label><div class="phonein"><span>+966</span><input type="tel" id="auPhone" inputmode="numeric" autocomplete="tel-national" placeholder="5XXXXXXXX" value="${esc(A.phone||'')}" ${inv('phone')}></div>
+    <p class="muted small" style="margin:4px 0 0">${t('mobileHint')}</p>${err('phone')}</div>`;
+  const emailF = `<div class="field"><label for="auEmail">${t('email')}</label><input type="email" id="auEmail" autocomplete="email" value="${esc(A.email||'')}" ${inv('email')} dir="ltr">${err('email')}</div>`;
+  const pwF = (id, label, ac, k, hint) => `<div class="field"><label for="${id}">${label}</label><div class="pw"><input type="${A.showPw?'text':'password'}" id="${id}" autocomplete="${ac}" ${inv(k)} dir="ltr">
+    <button type="button" data-au="togglePw" aria-pressed="${!!A.showPw}">${A.showPw ? t('hide') : t('show')}</button></div>${hint ? `<p class="muted small" style="margin:4px 0 0">${hint}</p>` : ''}${err(k)}</div>`;
+  const top = E.top ? `<div class="errbox" role="alert" tabindex="-1" id="errSum">${E.top}</div>` : '';
+  let body = '';
+  if (A.scr === 'welcome') body = `<div class="logo">${ic('pill')}</div><p class="center" style="font-weight:700;color:var(--primary-dark);margin:0">${t('app')}</p>
+    <h1 id="h" tabindex="-1" class="center" style="font-size:28px">${t('welcomeH')}</h1><p class="center muted">${t('aWelcomeT')}</p>
+    <div style="margin-top:24px"><button class="btn primary" data-au="toSignup">${t('createAcc')}</button><button class="btn secondary" data-au="toLogin">${t('haveAcc')}</button></div>
+    <div class="alt"><button class="link small" data-au="test">${ic('flask','s')}${t('testAcc')}</button></div>`;
+  else if (A.scr === 'login') body = `<h1 id="h" tabindex="-1">${t('loginH')}</h1>${seg}${top}<form id="auForm" novalidate>
+    ${A.method==='phone' ? phoneF + `<button class="btn primary" type="submit">${t('sendCode')}</button>`
+      : emailF + pwF('auPw', t('password'), 'current-password', 'pw') + `<p style="margin-top:-6px"><button type="button" class="link" data-au="toForgot">${t('forgot')}</button></p><button class="btn primary" type="submit">${t('loginBtn')}</button>`}</form>
+    <div class="alt">${t('noAcc')} <button class="link" data-au="toSignup">${t('createAcc')}</button></div>`;
+  else if (A.scr === 'signup') body = `<h1 id="h" tabindex="-1">${t('signupH')}</h1>${top}<form id="auForm" novalidate>
+    <div class="field"><label for="auName">${t('fullName')}</label><input type="text" id="auName" autocomplete="name" value="${esc(A.name||'')}" ${inv('name')}>${err('name')}</div>${seg}
+    ${A.method==='phone' ? phoneF : emailF + pwF('auPw', t('password'), 'new-password', 'pw', t('pwHint')) + pwF('auPw2', t('password2'), 'new-password', 'pw2')}
+    <button class="btn primary" type="submit">${A.method==='phone' ? t('sendCode') : t('createBtn')}</button></form>
+    <div class="alt">${t('yesAcc')} <button class="link" data-au="toLogin">${t('loginBtn')}</button></div>`;
+  else if (A.scr === 'otp') { const left = Math.max(0, Math.ceil((A.resendAt - Date.now())/1000));
+    body = `<div class="center"><div class="hero ok">${ic(A.via==='email'?'mail':'phone')}</div></div><h1 id="h" tabindex="-1" class="center">${t('otpH')}</h1>
+    <p class="center muted">${t('otpT')(`<bdi>${esc(A.via==='email' ? A.email : '+966 ' + A.phone)}</bdi>`)}</p>
+    <div class="demo" role="note">${ic('info')}<span>${t('otpDemo')(`<b><bdi>${A.code}</bdi></b>`)}</span></div>${top}
+    <form id="auForm" novalidate><div class="field"><label for="auCode">${t('code')}</label><input type="text" id="auCode" class="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="4" ${inv('code')}>${err('code')}</div>
+    <button class="btn primary" type="submit">${t('verify')}</button></form>
+    <button class="btn ghost" data-au="resend" ${left ? 'disabled aria-disabled="true" style="color:var(--muted);text-decoration:none"' : ''} id="resendBtn">${left ? t('resendIn')(left) : t('resend')}</button>
+    ${A.via!=='email' ? `<p class="center"><button class="link" data-au="back">${t('changeNum')}</button></p>` : ''}`; }
+  else if (A.scr === 'forgot') body = `<h1 id="h" tabindex="-1">${t('forgotH')}</h1><p class="muted">${t('forgotT')}</p>${top}<form id="auForm" novalidate>${emailF}<button class="btn primary" type="submit">${t('sendCode')}</button></form>`;
+  else if (A.scr === 'reset') body = `<h1 id="h" tabindex="-1">${t('resetH')}</h1>${top}<form id="auForm" novalidate>${pwF('auPw', t('newPw'), 'new-password', 'pw', t('pwHint'))}${pwF('auPw2', t('password2'), 'new-password', 'pw2')}<button class="btn primary" type="submit">${t('savePw')}</button></form>`;
+  return `<div class="auth">${lang}${body}</div>`;
+}
+const normPhone = v => { let d = String(v||'').replace(/[٠-٩]/g, c => '٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/\D/g,''); if (d.startsWith('966')) d = d.slice(3); if (d.startsWith('0')) d = d.slice(1); return d; };
+const okPhone = d => /^5\d{8}$/.test(d), okEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+function sendCode(via, purpose, extra){ Object.assign(S.auth, extra, { scr:'otp', via, purpose, code:String(Math.floor(1000 + Math.random()*9000)), resendAt:Date.now() + 30000, errs:{}, prev:S.auth.scr }); render(true); }
+function authFail(errs){ S.auth.errs = errs; render(); const f = document.querySelector('[aria-invalid="true"]') || document.getElementById('errSum'); f && f.focus(); announce(Object.values(errs)[0]); }
+function finishLogin(acc, isNew){ signIn(acc.id); S.auth = { scr:'welcome', method:'phone' }; render(true); toast(t('welcomeName')(esc(acc.name))); }
+function ensureTest(){ let a = ROOT.accounts.find(x => x.phone === '512345678');
+  if (!a){ a = { id:'test-hind', name:S.lang==='ar'?'هند':'Hind', phone:'512345678', email:'hind@example.com', pass:hashPw('Test1234') }; ROOT.accounts.push(a); } return a; }
+function authSubmit(){
+  const A = S.auth, g = id => (document.getElementById(id) || {}).value || '';
+  if (A.scr === 'login' && A.method === 'phone'){ A.phone = normPhone(g('auPhone'));
+    if (!okPhone(A.phone)) return authFail({ phone:t('ePhone') });
+    const acc = ROOT.accounts.find(a => a.phone === A.phone); if (!acc) return authFail({ phone:t('eNoPhone') });
+    return sendCode('phone', 'login', { accId:acc.id }); }
+  if (A.scr === 'login'){ A.email = g('auEmail').trim().toLowerCase(); const pw = g('auPw'), e = {};
+    if (!okEmail(A.email)) e.email = t('eEmail'); if (!pw) e.pw = t('ePw'); if (Object.keys(e).length) return authFail(e);
+    const acc = ROOT.accounts.find(a => a.email === A.email); if (!acc || acc.pass !== hashPw(pw)) return authFail({ top:t('eLogin') });
+    return finishLogin(acc); }
+  if (A.scr === 'signup'){ A.name = g('auName').trim(); const e = {};
+    if (!A.name) e.name = t('eName');
+    if (A.method === 'phone'){ A.phone = normPhone(g('auPhone')); if (!okPhone(A.phone)) e.phone = t('ePhone'); else if (ROOT.accounts.some(a => a.phone === A.phone)) e.phone = t('eTaken'); }
+    else { A.email = g('auEmail').trim().toLowerCase(); const pw = g('auPw'), pw2 = g('auPw2');
+      if (!okEmail(A.email)) e.email = t('eEmail'); else if (ROOT.accounts.some(a => a.email === A.email)) e.email = t('eTaken');
+      if (pw.length < 8) e.pw = t('ePw'); else if (pw !== pw2) e.pw2 = t('ePw2'); A.newPass = pw; }
+    if (Object.keys(e).length) return authFail(e);
+    if (A.method === 'phone') return sendCode('phone', 'signup', {});
+    const acc = { id:'u'+uid(), name:A.name, email:A.email, phone:'', pass:hashPw(A.newPass) }; ROOT.accounts.push(acc); A.newPass = null; persist(); return finishLogin(acc, true); }
+  if (A.scr === 'forgot'){ A.email = g('auEmail').trim().toLowerCase();
+    if (!okEmail(A.email)) return authFail({ email:t('eEmail') });
+    const acc = ROOT.accounts.find(a => a.email === A.email); if (!acc) return authFail({ email:t('eNoEmail') });
+    return sendCode('email', 'reset', { accId:acc.id }); }
+  if (A.scr === 'otp'){ const c = normPhone(g('auCode')).slice(0,4) || g('auCode').replace(/\D/g,'');
+    if (c !== A.code) return authFail({ code:t('eCode') });
+    if (A.purpose === 'login') return finishLogin(ROOT.accounts.find(a => a.id === A.accId));
+    if (A.purpose === 'signup'){ const acc = { id:'u'+uid(), name:A.name, phone:A.phone, email:'', pass:'' }; ROOT.accounts.push(acc); persist(); return finishLogin(acc, true); }
+    if (A.purpose === 'reset'){ S.auth = { ...A, scr:'reset', errs:{} }; return render(true); } }
+  if (A.scr === 'reset'){ const pw = g('auPw'), pw2 = g('auPw2');
+    if (pw.length < 8) return authFail({ pw:t('ePw') }); if (pw !== pw2) return authFail({ pw2:t('ePw2') });
+    const acc = ROOT.accounts.find(a => a.id === A.accId); acc.pass = hashPw(pw); persist();
+    S.auth = { scr:'login', method:'email', email:acc.email, errs:{} }; render(true); toast(t('pwChanged')); }
+}
+function wireAuth(){
+  const f = document.getElementById('auForm'); if (f) f.onsubmit = e => { e.preventDefault(); authSubmit(); };
+  clearInterval(wireAuth.tm); if (S.auth.scr === 'otp') wireAuth.tm = setInterval(() => { const b = document.getElementById('resendBtn'); if (!b) return clearInterval(wireAuth.tm);
+    const left = Math.max(0, Math.ceil((S.auth.resendAt - Date.now())/1000)); if (left){ b.textContent = t('resendIn')(left); } else if (b.disabled){ b.disabled = false; b.removeAttribute('aria-disabled'); b.removeAttribute('style'); b.textContent = t('resend'); } }, 1000);
+}
+function authAct(a){
+  const A = S.auth, keep = () => { ['auPhone','auEmail','auName'].forEach(id => { const el = document.getElementById(id); if (el) A[{auPhone:'phone',auEmail:'email',auName:'name'}[id]] = el.value; }); };
+  switch (a){
+    case 'toSignup': S.auth = { scr:'signup', method:A.method || 'phone', errs:{} }; return render(true);
+    case 'toLogin': S.auth = { scr:'login', method:A.method || 'phone', errs:{} }; return render(true);
+    case 'toForgot': keep(); S.auth = { ...A, scr:'forgot', errs:{} }; return render(true);
+    case 'mPhone': keep(); A.method = 'phone'; A.errs = {}; render(); document.querySelector('[data-au=mPhone]').focus(); return;
+    case 'mEmail': keep(); A.method = 'email'; A.errs = {}; render(); document.querySelector('[data-au=mEmail]').focus(); return;
+    case 'togglePw': { const vals = [...document.querySelectorAll('.pw input')].map(i => i.value); keep(); A.showPw = !A.showPw; render(); document.querySelectorAll('.pw input').forEach((i,n) => i.value = vals[n] || ''); document.querySelector('[data-au=togglePw]').focus(); return; }
+    case 'resend': A.code = String(Math.floor(1000 + Math.random()*9000)); A.resendAt = Date.now() + 30000; A.errs = {}; render(); toast(t('codeSent')); return;
+    case 'back': { const to = A.scr === 'otp' ? (A.purpose === 'reset' ? 'forgot' : A.purpose === 'signup' ? 'signup' : 'login') : A.scr === 'forgot' || A.scr === 'reset' ? 'login' : 'welcome';
+      S.auth = { ...A, scr:to, errs:{} }; if (to === 'login' && A.purpose === 'reset') S.auth.method = 'email'; return render(true); }
+    case 'test': { const acc = ensureTest(); persist(); signIn(acc.id); if (!S.meds.length) loadStudy(); S.histModeSel = 'usual'; return render(true); }
+  }
+}
+function wire(){
+  ['aTitle','aPlace','aDate','aTime','aNotes'].forEach(id => { const el = document.getElementById(id); if (el) el.onchange = keepAppt; });
+  const tf = document.getElementById('typeForm'); if (tf) tf.onsubmit = e => { e.preventDefault(); const v = document.getElementById('typeIn').value.trim(); if (v) heard(v, null); };
+  const ni = document.getElementById('nameIn'); if (ni) ni.onchange = () => { S.name = ni.value.trim(); persist(); };
+  const wi = document.getElementById('workIn'); if (wi) wi.onchange = () => { if (wi.value){ S.workEnd = wi.value; persist(); } };
+  const oi = document.getElementById('offIn'); if (oi) oi.onchange = () => { S.offline = oi.checked; if (!S.offline) flushPending(); };
+  const ai = document.getElementById('annIn'); if (ai) ai.onchange = () => document.body.classList.toggle('annot', ai.checked);
+  document.querySelectorAll('input[name=hm]').forEach(r => r.onchange = () => { S.histModeSel = r.value; seedHistory(r.value); persist(); });
+  const fn = document.getElementById('fName'); if (fn) fn.oninput = () => { S.form.name = fn.value; const pos = fn.selectionStart; S.form.errName = false; renderKeep(() => { const x = document.getElementById('fName'); x.focus(); x.setSelectionRange(pos,pos); }); };
+  const fno = document.getElementById('fNotes'); if (fno) fno.oninput = () => { S.form.notes = fno.value; };
+  document.querySelectorAll('[data-ti]').forEach(inp => inp.onchange = () => { S.form.times[+inp.dataset.ti] = inp.value; S.form.errTimes = false; });
+  const fbn = document.getElementById('fbNote'); if (fbn) fbn.oninput = () => { S.f1.note = fbn.value; };
+  document.querySelectorAll('input[name=when]').forEach(r => r.onchange = () => { S.layer.choice = r.value; });
+}
+function keepAppt(){ const f = S.aform; if (!f) return; const g = id => { const el = document.getElementById(id); return el ? el.value : undefined; };
+  ['title:aTitle','place:aPlace','date:aDate','time:aTime','notes:aNotes'].forEach(x => { const [k,id] = x.split(':'); const v = g(id); if (v !== undefined) f[k] = v; }); }
+function renderKeep(after){ const sc = window.scrollY; render(); window.scrollTo(0, sc); after && after(); }
+function flushPending(){ let n = 0; Object.entries(S.log).forEach(([k,v]) => { if (v.s === 'wait'){ v.s = 'taken'; n++; } }); if (n){ persist(); render(); toast(t('savedNow')); } }
+
+/* ============ events ============ */
+dev.addEventListener('click', e => {
+  const b = e.target.closest('button,[data-act]'); if (!b || b.disabled) return;
+  const d = b.dataset;
+  if (d.au) return authAct(d.au);
+  if (d.act === 'notifOpen'){ const n = S.notif; S.notif = null; renderNotif(); if (!n) return;
+    if (n.kind === 'appt'){ S.layer = null; return go('appts'); }
+    if (n.post) S.banner = S.lang==='ar' ? `الساعة الآن ${T(now())}.` : `It is now ${T(now())}.`; else S.banner = null;
+    S.tab = 'home'; S.page = null; return remindDose(dosesFor(now()).find(x => x.k === n.d.k) || { k:n.d.k, m:medById(n.d.med), time:n.d.time }); }
+  if (d.act === 'notifX'){ S.notif = null; renderNotif(); return; }
+  if (d.appt){ const a = S.appts.find(x => x.id === d.appt); S.aform = { ...a, errs:[] }; return go(S.tab, { name:'appt' }); }
+  if (d.apick){ keepAppt(); S.aform.title = d.apick; S.aform.eT = false; renderKeep(); document.getElementById('aTitle').focus(); return; }
+  if (d.arem){ keepAppt(); S.aform.remind = d.arem; renderKeep(); dev.querySelector(`[data-arem="${d.arem}"]`).focus(); return; }
+  if (d.tab){ S.banner = null; return go(d.tab); }
+  if (d.dose){ const x = dosesFor(now()).find(y => y.k === d.dose); if (x){ const st = status(x).s; if (st === 'taken'){ S.layer = { scr:'taken', k:x.k, med:x.m.id, time:x.time }; S.lastFocus = b; return render(true); } return remindDose(x); } return; }
+  if (d.take){ const x = dosesFor(now()).find(y => y.k === d.take); return takeDose({ scr:'rem', k:x.k, med:x.m.id, time:x.time }, 'button'); }
+  if (d.later){ const x = dosesFor(now()).find(y => y.k === d.later); S.layer = { scr:'rem', k:x.k, med:x.m.id, time:x.time }; return openPost(); }
+  if (d.med){ return go('meds', { name:'med', id:d.med }); }
+  if (d.day !== undefined){ S.histDay = +d.day; render(); dev.querySelector(`[data-day="${d.day}"]`).focus(); return; }
+  if (d.sw){ if (d.sw === 'sug') S.sugOn = !S.sugOn; else if (d.sw === 'sound') S.soundOn = !S.soundOn; else S.voiceOn = !S.voiceOn; persist(); render(); dev.querySelector(`[data-sw="${d.sw}"]`).focus(); return; }
+  if (d.setlang){ S.lang = d.setlang; persist(); render(); dev.querySelector(`[data-setlang="${d.setlang}"]`).focus(); return; }
+  if (d.pick){ S.form.name = d.pick; S.form.errName = false; renderKeep(); document.getElementById('fName').focus(); return; }
+  if (d.form){ S.form.form = d.form; renderKeep(); dev.querySelector(`[data-form="${d.form}"]`).focus(); return; }
+  if (d.amt){ S.form.amount = Math.max(1, Math.min(20, S.form.amount + +d.amt)); renderKeep(); dev.querySelector(`[data-amt="${d.amt}"]`).focus(); return; }
+  if (d.freq){ const n = +d.freq, def = { 1:['09:00'], 2:['09:00','21:00'], 3:['08:00','14:00','20:00'] }[n]; S.form.times = def.map((x,i) => S.form.times[i] || x).slice(0,n); if (new Set(S.form.times).size < n) S.form.times = def; renderKeep(); dev.querySelector(`[data-freq="${n}"]`).focus(); return; }
+  if (d.food){ S.form.food = d.food; renderKeep(); dev.querySelector(`[data-food="${d.food}"]`).focus(); return; }
+  if (d.color){ S.form.color = d.color; renderKeep(); dev.querySelector(`[data-color="${d.color}"]`).focus(); return; }
+  if (d.rate !== undefined){ S.f1.rate = +d.rate; S.f1.err = false; renderKeep(); dev.querySelector(`[data-rate="${d.rate}"]`).focus(); return; }
+  if (d.topic !== undefined){ S.f1.topic = S.f1.topic === +d.topic ? null : +d.topic; renderKeep(); dev.querySelector(`[data-topic="${d.topic}"]`).focus(); return; }
+  if (d.reason){ const m = medById(S.layer.med), sg = suggestion(m.id); S.fbOpt = sg.o || S.fbOpt; S.fbBefore = { blocked:S.blocked.slice(), sugOn:S.sugOn };
+    if (d.reason === 'time') S.blocked.push(m.id+':'+S.fbOpt); if (d.reason === 'off') S.sugOn = false;
+    persist(); S.fbState = d.reason; logFb({ type:'suggestion', helpful:false, reason:d.reason, option:S.fbOpt }); render(); const u = dlg.querySelector('.banner .link') || dlg.querySelector('#dh'); u && u.focus(); return; }
+  act(d.act, b);
+});
+function openPost(){ const L0 = S.layer; S.layer = { ...L0, scr:'post', choice:null }; S.fbState = null; S.vstat = null;
+  const sg = suggestion(L0.med); S.dialog = sg.kind === 'sure' ? 'sug' : null; S.dlgFocus = null; render(true); }
+function act(a, b){
+  const L0 = S.layer;
+  switch (a){
+    case 'lang': { S.lang = S.lang === 'ar' ? 'en' : 'ar'; persist(); render(); const all = [...dev.querySelectorAll('.langbtn')].filter(x => !x.closest('[inert]')); all.length && all[all.length-1].focus(); announce(S.lang==='ar'?'العربية':'English'); return; }
+    case 'example': loadStudy(); S.histModeSel = 'usual'; S.tab = 'home'; S.page = null; return render(true);
+    case 'svcMeds': return go('meds'); case 'svcAppts': return go('appts'); case 'svcAcct': return go('acct');
+    case 'svcHist': S.histDay = 0; return go('home', { name:'hist' });
+    case 'addAppt': S.aform = { id:null, title:'', place:'', date:'', time:'', remind:'1d', notes:'', errs:[] }; return go('appts', { name:'appt' });
+    case 'apptCancel': S.aform = null; return go(S.tab);
+    case 'apptSave': { keepAppt(); const f = S.aform; f.title = f.title.trim();
+      f.eT = !f.title; f.eD = !f.date ? 1 : (f.date < isoDay() ? 2 : 0); f.eTm = !f.time;
+      f.errs = [f.eT && t('errTitle'), f.eD && (f.eD === 2 ? t('errPastDate') : t('errDate')), f.eTm && t('errATime')].filter(Boolean);
+      if (f.errs.length){ render(); const es = document.getElementById('errSum'); es && es.focus(); return; }
+      const a = { id:f.id || uid(), title:f.title, place:(f.place||'').trim(), date:f.date, time:f.time, remind:f.remind, notes:f.notes };
+      if (f.id) S.appts = S.appts.map(x => x.id === f.id ? a : x); else S.appts.push(a);
+      persist(); S.aform = null; go('appts'); toast(f.id ? t('apptUpdated')(esc(a.title)) : t('apptAdded')(esc(a.title))); return; }
+    case 'apptDel': keepAppt(); return openDialog('delAppt');
+    case 'delApptYes': { const id = S.aform.id, a = S.appts.find(x => x.id === id), idx = S.appts.indexOf(a); S.appts = S.appts.filter(x => x.id !== id); persist(); S.aform = null; S.dialog = null; go('appts');
+      toast(t('apptDeleted')(esc(a.title)), () => { S.appts.splice(idx, 0, a); persist(); render(); }); return; }
+    case 'logout': signOut(); render(true); toast(t('loggedOut')); return;
+    case 'add': S.form = { id:null, name:'', form:'tablet', amount:1, times:['09:00'], food:'any', color:'green', notes:'', errs:[] }; return go(S.tab === 'meds' ? 'meds' : 'meds', { name:'add' });
+    case 'editMed': { const m = medById(S.page.id); S.form = { ...JSON.parse(JSON.stringify(m)), errs:[] }; return go('meds', { name:'add' }); }
+    case 'formCancel': S.form = null; return go(S.tab);
+    case 'formSave': { const f = S.form; f.name = (document.getElementById('fName').value || '').trim(); f.notes = document.getElementById('fNotes').value;
+      document.querySelectorAll('[data-ti]').forEach(inp => f.times[+inp.dataset.ti] = inp.value);
+      f.errName = !f.name; f.errTimes = new Set(f.times).size < f.times.length || f.times.some(x => !x); f.errs = [f.errName && t('errName'), f.errTimes && t('errTimes')].filter(Boolean);
+      if (f.errs.length){ render(); const es = document.getElementById('errSum'); es && es.focus(); return; }
+      const m = { id:f.id || uid(), name:f.name, form:f.form, amount:f.amount, times:[...f.times].sort(), food:f.food, color:f.color, notes:f.notes };
+      if (f.id) S.meds = S.meds.map(x => x.id === f.id ? m : x); else S.meds.push(m);
+      persist(); S.form = null; go('meds'); toast(f.id ? t('updated')(esc(m.name)) : t('added')(esc(m.name))); return; }
+    case 'formDel': return openDialog('del');
+    case 'delYes': { const id = S.form ? S.form.id : S.page.id, m = medById(id), idx = S.meds.indexOf(m); S.meds = S.meds.filter(x => x.id !== id); persist(); S.form = null; S.dialog = null; go('meds');
+      toast(t('deleted')(esc(m.name)), () => { S.meds.splice(idx, 0, m); persist(); render(); }); return; }
+    case 'pageBack': S.f1 = null; return go(S.tab);
+    case 'feedback': S.f1 = null; return go('acct', { name:'fb' });
+    case 'sendFb': if (S.f1.rate === null){ S.f1.err = true; render(); dev.querySelector('[data-rate="0"]').focus(); announce(t('f1err')); return; }
+      logFb({ type:'app', rating:S.f1.rate, topic:S.f1.topic, note:S.f1.note }); S.f1.sent = true; return render(true);
+    case 'dictNote': return dictInto('fbNote', v => { S.f1.note = v; });
+    case 'dictName': return dictInto('fName', v => { S.form.name = v; S.form.errName = false; renderKeep(); });
+    case 'resetAll': return openDialog('reset');
+    case 'resetYes': { const nm = S.name; Object.assign(S, blank(), { name:nm, dialog:null }); persist(); return go('home'); }
+    case 'loadStudy': loadStudy(); S.histModeSel = 'usual'; toast(t('loadStudy') + ' ✓'); return go('home');
+    case 'sendRem': { if (!S.meds.length) loadStudy(); const m = medById('bp') || S.meds[0]; const k = key(isoDay(), m.id, m.times[0]);
+      delete S.log[k]; delete S.post[k]; persist(); S.banner = null; go('home'); return notify({ kind:'dose', d:{ k, med:m.id, time:m.times[0] } }); }
+    case 'fireRem': { const e = Object.entries(S.post).filter(([k]) => k.startsWith(isoDay())).pop(); if (!e){ toast(t('noPost'), null, 'info'); return; }
+      const [k, p] = e, [, id, tm] = k.split('|'); p.to = new Date(Date.now() - 1000).toISOString(); persist(); S.shownKeys[k+'p'] = true; go('home');
+      return notify({ kind:'dose', post:true, d:{ k, med:id, time:tm } }); }
+    /* reminder layer */
+    case 'lyClose': S.banner = null; closeLayer(); return;
+    case 'lyTake': return takeDose(L0, 'button');
+    case 'lyLater': return openPost();
+    case 'lyBackRem': S.layer = { ...L0, scr:'rem' }; S.dialog = null; return render(true);
+    case 'lySet': { const v = (dev.querySelector('input[name=when]:checked') || {}).value || '30'; return postpone(L0, v, 'button'); }
+    case 'lyChange': delete S.post[L0.k]; S.hist = S.hist.slice(0, -1); persist(); S.layer = { ...L0, scr:'post' }; S.dialog = null; S.fbState = null; return render(true);
+    case 'lyCancelRem': delete S.post[L0.k]; S.hist = S.hist.slice(0, -1); persist(); S.banner = t('remCancelled'); S.layer = { ...L0, scr:'rem' }; S.vstat = null; return render(true);
+    case 'lyUndoAsk': S.layer = { ...L0, scr:'undo' }; return render(true);
+    case 'lyBackTaken': S.layer = { ...L0, scr:'taken' }; return render(true);
+    case 'lyUndo': delete S.log[L0.k]; persist(); S.banner = t('undone'); S.layer = { ...L0, scr:'rem' }; S.vstat = null; return render(true);
+    case 'lyRetry': if (S.offline){ S.layer = { ...L0, retried:true }; render(); announce(t('still')); } else { S.log[L0.k].s = 'taken'; persist(); S.layer = { ...L0, scr:'taken' }; render(true); } return;
+    /* suggestion */
+    case 'sugSet': { const o = suggestion(L0.med).o; logFb({ type:'suggestion', accepted:true, option:o }); S.dialog = null; return postpone(L0, o, 'suggestion'); }
+    case 'dlgClose': return closeDialog();
+    case 'fbUp': S.fbState = 'up'; logFb({ type:'suggestion', helpful:true }); render(); dlg.querySelector('[data-act=fbUp]').focus(); return;
+    case 'fbDown': S.fbState = 'down'; render(); dlg.querySelector('[data-reason]').focus(); return;
+    case 'fbUndo': Object.assign(S, S.fbBefore); persist(); S.fbState = null; render(); return;
+    /* voice */
+    case 'mic': if (!S.voiceOn){ S.voiceUI = { mode:'fail', why:'off' }; return openDialog('voice'); }
+      if (!S.layer && !dueDoses().length){ /* still allow navigation commands */ }
+      S.dlgFocus = b; startVoice(); S.dialog = 'voice'; return render();
+    case 'vstop': if (dictation){ stopListen(); return; } stopListen(); if (S.voiceUI && S.voiceUI.partial) heard(S.voiceUI.partial, null); else { S.voiceUI = { mode:'fail', why:'notcaught' }; render(); } return;
+    case 'vtype': stopListen(); S.voiceUI = { mode:'listen', partial:'', typed:true, focusType:true }; return render();
+    case 'vagain': startVoice(); return render();
+    case 'vconfYes': { const v = S.voiceUI; S.dialog = null; S.voiceUI = null; return doIntent(v.intent, v.text); }
+    case 'vconfNo': logFb({ type:'voice', heard:S.voiceUI.text, intent:S.voiceUI.intent, correct:false }); S.voiceUI = { mode:'sorry' }; return render();
+    case 'vyes': S.vstat.ok = true; logFb({ type:'voice', heard:S.vstat.text, correct:true }); render(); announce(t('vThanks')); return;
+    case 'vno': { const v = S.vstat; logFb({ type:'voice', heard:v.text, correct:false });
+      if (v.snap.log) S.log[v.k] = v.snap.log; else delete S.log[v.k]; if (v.snap.post) S.post[v.k] = v.snap.post; else delete S.post[v.k];
+      S.hist = S.hist.slice(0, v.snap.histLen); persist(); S.vstat = null; S.banner = t('vUndone');
+      if (v.snap.layer) S.layer = { ...v.snap.layer }; else S.layer = null; return render(true); }
+    case 'toastUndo': { const f = S.toast.undoFn; S.toast = null; f && f(); renderToast(); return; }
+    case 'toastX': S.toast = null; renderToast(); return;
+  }
+}
+function dictInto(id, set){
+  const el = document.getElementById(id);
+  listen(text => { const v = (el.value ? el.value + ' ' : '') + text; el.value = v.trim(); set(el.value.trim()); }, why => { if (why !== 'stopped') toast(why === 'blocked' ? t('blockedMic') : t('noVoice'), null, 'err'); });
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape'){ if (S.dialog){ e.preventDefault(); closeDialog(); } else if (S.layer){ e.preventDefault(); closeLayer(); } return; }
+  if (e.key === 'Tab' && S.dialog){ const f = [...dlg.querySelectorAll('button, input')].filter(x => x.offsetParent !== null);
+    if (!f.length) return; const a = f[0], z = f[f.length-1];
+    if (!dlg.contains(document.activeElement)){ e.preventDefault(); a.focus(); }
+    else if (e.shiftKey && document.activeElement === a){ e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z){ e.preventDefault(); a.focus(); } }
+});
+
+/* ============ real-time reminders (while the app is open) ============ */
+setInterval(() => {
+  if (S.layer || S.dialog || !S.uid) return;
+  apptAlerts();
+  for (const d of dosesFor(now())){
+    const st = status(d), p = S.post[d.k];
+    const due = st.s === 'due' && (now() - (p ? new Date(p.to) : d.when)) < 120e3;
+    const tag = d.k + (p ? 'p' : '');
+    if (due && !S.shownKeys[tag] && !S.notif){ S.shownKeys[tag] = true; notify({ kind:'dose', post:!!p, d:{ k:d.k, med:d.m.id, time:d.time } }); break; }
+  }
+  const sig = dosesFor(now()).map(x => status(x).s).join();
+  if (sig !== tick.sig){ tick.sig = sig; if (!S.page && S.tab === 'home' && !S.layer) renderKeep(); }
+}, 20000);
+const tick = {};
+
+/* ============ start (deep links are used for report figures) ============ */
+(function start(){
+  const q = new URLSearchParams(location.search);
+  if (q.get('lang')) S.lang = q.get('lang') === 'en' ? 'en' : 'ar';
+  if (q.has('annot')) document.body.classList.add('annot');
+  if (q.has('shot')) document.body.classList.add('shot');
+  const h = location.hash.slice(1);
+  const AUTH = { welcome:['welcome','phone'], login:['login','phone'], 'login-email':['login','email'], signup:['signup','phone'], 'signup-email':['signup','email'], otp:['otp','phone'], forgot:['forgot','email'] };
+  if (q.has('fresh') || AUTH[h]){ S.uid = null; S.auth = { scr:(AUTH[h]||['welcome'])[0], method:(AUTH[h]||[0,'phone'])[1], errs:{} };
+    if (h === 'otp') Object.assign(S.auth, { via:'phone', purpose:'login', phone:'512345678', code:'4821', resendAt:Date.now()+30000 });
+    render(); return; }
+  if (q.has('shot')){ const acc = ensureTest(); signIn(acc.id); }
+  if (!S.uid){ render(); return; }
+  const FIG = ['notif','rem','post','sug','set','taken','undo','off','voice','vconfirm','add','med','fb','returned','appt-add','hist-page'];
+  const shot = q.has('shot');
+  if (shot && (FIG.includes(h) || ['home','meds','appts','acct'].includes(h))){ loadStudy(); S.histModeSel = 'usual';
+    dosesFor(now()).forEach(x => { if (x.when < now() && x.m.id !== 'vitd' && x.m.id !== 'bp') S.log[x.k] = { s:'taken', at:new Date(x.when.getTime()+5*60e3).toISOString() }; }); }
+  const bp = medById('bp'), k = (bp && shot) ? key(isoDay(), 'bp', '09:00') : null;
+  if (k) { delete S.log[k]; S.post[k] = { to:new Date(Date.now()-60e3).toISOString(), o:'30' }; if (h !== 'home') delete S.post[k]; }
+  const L0 = k ? { scr:'rem', k, med:'bp', time:'09:00' } : null;
+  switch (h){
+    case 'meds': case 'appts': case 'acct': case 'home': S.tab = h; break;
+    case 'hist-page': S.tab = 'home'; S.page = { name:'hist' }; break;
+    case 'appt-add': S.tab = 'appts'; S.aform = { id:null, title:'', place:'', date:'', time:'', remind:'1d', notes:'', errs:[] }; S.page = { name:'appt' }; break;
+    case 'rem': S.layer = L0; break;
+    case 'notif': S.tab = 'home'; S.notif = { kind:'dose', id:1, d:{ k, med:'bp', time:'09:00' } }; break;
+    case 'returned': S.post[k] = { to:new Date(Date.now()-1000).toISOString(), o:'work' }; S.banner = S.lang==='ar' ? `الساعة الآن ${T(now())}.` : `It is now ${T(now())}.`; S.layer = L0; break;
+    case 'post': S.layer = { ...L0, scr:'post' }; break;
+    case 'sug': S.layer = { ...L0, scr:'post' }; S.dialog = 'sug'; break;
+    case 'set': S.post[k] = { to:optTime('work').toISOString(), o:'work' }; S.layer = { ...L0, scr:'set', o:'work' }; break;
+    case 'taken': S.log[k] = { s:'taken', at:now().toISOString() }; S.layer = { ...L0, scr:'taken' }; break;
+    case 'undo': S.log[k] = { s:'taken', at:now().toISOString() }; S.layer = { ...L0, scr:'undo' }; break;
+    case 'off': S.log[k] = { s:'wait', at:now().toISOString() }; S.layer = { ...L0, scr:'off' }; break;
+    case 'voice': S.layer = L0; S.dialog = 'voice'; S.voiceUI = { mode:'listen', partial: S.lang==='ar' ? 'ذكّرني بعد ما أخلص' : 'Remind me when I finish' }; break;
+    case 'vconfirm': S.layer = L0; S.dialog = 'voice'; S.voiceUI = { mode:'confirm', text: S.lang==='ar' ? 'ذكرني بعد ما اخلس' : 'remind me after I finish walk', intent:'work' }; break;
+    case 'add': S.tab = 'meds'; S.form = { id:null, name:'', form:'tablet', amount:1, times:['09:00'], food:'any', color:'green', notes:'', errs:[] }; S.page = { name:'add' }; break;
+    case 'med': S.tab = 'meds'; S.page = { name:'med', id:'dia' }; break;
+    case 'fb': S.tab = 'acct'; S.page = { name:'fb' }; break;
+  }
+  render();
+})();
+</script>
+
+</body>
+</html>
