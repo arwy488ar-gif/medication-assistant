@@ -10,18 +10,37 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   /* Layout: a real app shell. Phone: full screen with a bottom tab bar. Laptop (900px+): side navigation and a centred content column.
-     Single light theme on purpose: the course contrast checks (WCAG 1.4.3 / 1.4.11) were run on this palette. */
+     Light, dark and automatic themes; both palettes were checked for WCAG 1.4.3 / 1.4.11 contrast. */
   :root{ color-scheme:light;
     --page:#E9EEE8; --bg:#F5F7F4; --surface:#FFFFFF; --ink:#1A1F1A; --muted:#4B544B; --line:#767676; --soft:#DCE2DA;
-    --primary:#2E7D32; --primary-dark:#1B5E20; --on-primary:#FFFFFF; --primary-soft:#E6F1E7;
-    --danger:#B3261E; --danger-soft:#FBEDEC; --warn:#7A4A00; --warn-soft:#FFF2D9; --focus:#0B57D0;
+    --primary:#2E7D32; --primary-dark:#1B5E20; --on-primary:#FFFFFF; --primary-soft:#E6F1E7; --brand:#2E7D32;
+    --danger:#B3261E; --on-danger:#FFFFFF; --danger-soft:#FBEDEC; --warn:#7A4A00; --warn-soft:#FFF2D9; --warn-line:#B98A3A; --focus:#0B57D0;
+    --muted-bg:#EEF1ED; --chip-up:#F0F2EF; --chip-line:#9AA39A; --track:#E3E7E1; --thumb:#FFFFFF; --input:#FFFFFF; --seg:#E7ECE5; --demo:#F7F8F6; --study:#FAFBF9;
+    --blue:#0D47A1; --blue-soft:#E3EEFA; --notif:rgba(255,255,255,.98);
     --font:"IBM Plex Sans Arabic","Segoe UI",Tahoma,system-ui,-apple-system,Roboto,Arial,sans-serif;
   }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ color-scheme:dark;
+    --page:#0B100D; --bg:#0F1512; --surface:#18201B; --ink:#E6ECE6; --muted:#AAB4AB; --line:#8B968C; --soft:#2A332D;
+    --primary:#7CC67F; --primary-dark:#A5D6A7; --on-primary:#0B1F0C; --primary-soft:#1D3220;
+    --danger:#F2938B; --on-danger:#2B0B09; --danger-soft:#3A1D1B; --warn:#F5C77E; --warn-soft:#33280F; --warn-line:#8C6A2C; --focus:#8AB4F8;
+    --muted-bg:#222A25; --chip-up:#232B26; --chip-line:#6F7A71; --track:#3A443D; --thumb:#E6ECE6; --input:#121814; --seg:#232B26; --demo:#1E2621; --study:#161C18;
+    --blue:#9EC5F8; --blue-soft:#1B2A3D; --notif:rgba(30,38,33,.98); } }
+  :root[data-theme="dark"]{ color-scheme:dark;
+    --page:#0B100D; --bg:#0F1512; --surface:#18201B; --ink:#E6ECE6; --muted:#AAB4AB; --line:#8B968C; --soft:#2A332D;
+    --primary:#7CC67F; --primary-dark:#A5D6A7; --on-primary:#0B1F0C; --primary-soft:#1D3220;
+    --danger:#F2938B; --on-danger:#2B0B09; --danger-soft:#3A1D1B; --warn:#F5C77E; --warn-soft:#33280F; --warn-line:#8C6A2C; --focus:#8AB4F8;
+    --muted-bg:#222A25; --chip-up:#232B26; --chip-line:#6F7A71; --track:#3A443D; --thumb:#E6ECE6; --input:#121814; --seg:#232B26; --demo:#1E2621; --study:#161C18;
+    --blue:#9EC5F8; --blue-soft:#1B2A3D; --notif:rgba(30,38,33,.98); }
+  /* medicine colour tags: a strong colour for the icon and a soft one behind it, per theme */
+  .hue-green{--h:#2E7D32;--hs:#E6F1E7}.hue-blue{--h:#1565C0;--hs:#E3EEFA}.hue-orange{--h:#B45309;--hs:#FDF0E1}.hue-purple{--h:#6A3FA0;--hs:#F0EAF8}.hue-red{--h:#B3261E;--hs:#FBEDEC}.hue-grey{--h:#4B544B;--hs:#EEF1ED}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .hue-green{--h:#81C784;--hs:#1D3220} :root:not([data-theme="light"]) .hue-blue{--h:#90CAF9;--hs:#1A2B3F} :root:not([data-theme="light"]) .hue-orange{--h:#FFB74D;--hs:#3A2A12} :root:not([data-theme="light"]) .hue-purple{--h:#CE93D8;--hs:#2F2238} :root:not([data-theme="light"]) .hue-red{--h:#F2938B;--hs:#3A1D1B} :root:not([data-theme="light"]) .hue-grey{--h:#AAB4AB;--hs:#222A25} }
+  :root[data-theme="dark"] .hue-green{--h:#81C784;--hs:#1D3220} :root[data-theme="dark"] .hue-blue{--h:#90CAF9;--hs:#1A2B3F} :root[data-theme="dark"] .hue-orange{--h:#FFB74D;--hs:#3A2A12} :root[data-theme="dark"] .hue-purple{--h:#CE93D8;--hs:#2F2238} :root[data-theme="dark"] .hue-red{--h:#F2938B;--hs:#3A1D1B} :root[data-theme="dark"] .hue-grey{--h:#AAB4AB;--hs:#222A25}
+  .medic[class*="hue-"]{background:var(--hs);color:var(--h)}
   *{box-sizing:border-box}
   html,body{min-height:100%}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5}
   button,input,textarea,select{font-family:inherit}
-  .app{min-height:100vh;display:flex;flex-direction:column}
+  .app{display:flex;flex-direction:column}
   .view{flex:1;width:100%;max-width:640px;margin:0 auto;padding:12px max(16px, env(safe-area-inset-right, 0px)) 120px max(16px, env(safe-area-inset-left, 0px));position:relative}
   .tabs{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;background:var(--surface);border-top:1px solid var(--soft);padding:6px 6px calc(8px + env(safe-area-inset-bottom, 0px))}
   .navbrand{display:none}
@@ -31,7 +50,7 @@
   .tab-ic{width:56px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center}
   @media (min-width:900px){
     .app{flex-direction:row}
-    .tabs{position:sticky;top:0;height:100vh;flex-direction:column;width:232px;flex:none;border-top:none;border-inline-end:1px solid var(--soft);padding:22px 12px;gap:4px}
+    .tabs{position:sticky;top:0;flex-direction:column;width:232px;flex:none;border-top:none;border-inline-end:1px solid var(--soft);padding:22px 12px;gap:4px}
     .tabs button{flex:none;flex-direction:row;justify-content:flex-start;gap:10px;font-size:15.5px;padding:0 8px;min-height:52px}
     .tabs .tab-ic{width:40px}
     .navbrand{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--primary-dark);font-size:16px;padding:0 8px 18px}
@@ -59,24 +78,26 @@
   .primary:hover{background:var(--primary-dark);border-color:var(--primary-dark)}
   .secondary{background:var(--surface);color:var(--primary-dark);border:2px solid var(--primary)}
   .secondary:hover{background:var(--primary-soft)}
-  .danger{background:var(--danger);color:#fff;border:2px solid var(--danger)}
+  .danger{background:var(--danger);color:var(--on-danger);border:2px solid var(--danger)}
   .ghost{background:transparent;color:var(--primary-dark);border:2px solid transparent;text-decoration:underline}
   .row{display:flex;gap:10px}.row>.btn{flex:1}
   .link{background:none;border:none;color:var(--primary-dark);text-decoration:underline;font-size:16px;min-height:44px;padding:0 4px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
   .chip{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:999px;font-size:13.5px;font-weight:700;white-space:nowrap}
   .chip svg.i{width:15px;height:15px;stroke-width:2.4}
-  .c-due{background:var(--warn-soft);color:var(--warn);border:1px solid #B98A3A}
+  .c-due{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn-line)}
   .c-taken{background:var(--primary-soft);color:var(--primary-dark);border:1px solid var(--primary)}
   .c-missed{background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger)}
-  .c-up{background:#F0F2EF;color:var(--muted);border:1px solid #9AA39A}
+  .c-up{background:var(--chip-up);color:var(--muted);border:1px solid var(--chip-line)}
   .c-wait{background:var(--warn-soft);color:var(--warn);border:1px dashed var(--warn)}
   /* home */
   .hello{font-size:14px;color:var(--muted);margin:0}
-  .next{background:var(--primary);color:#fff;border-radius:22px;padding:16px;margin:12px 0 4px}
+  .next{background:var(--brand);color:#fff;border-radius:22px;padding:16px;margin:12px 0 4px}
   .next .lbl{font-size:13px;font-weight:700;letter-spacing:.04em;opacity:.95}
   .next .nm{font-size:21px;font-weight:700;margin:2px 0}
-  .next .chip{background:#fff;color:var(--primary-dark);border:none}
-  .next .btn.primary{background:#fff;color:var(--primary-dark);border-color:#fff}
+  .next .chip{background:#fff;color:#1B5E20;border:none}
+  .next .btn.primary{background:#fff;color:#1B5E20;border-color:#fff}
+  .next .btn.primary:hover{background:#E8F5E9;border-color:#E8F5E9}
+  .next .btn.secondary:hover{background:rgba(255,255,255,.14)}
   .next .btn.secondary{background:transparent;color:#fff;border-color:#fff}
   .next .row{margin-top:12px}.next .row .btn{margin:0;font-size:16px;min-height:50px}
   .prog{display:flex;align-items:center;gap:14px;margin:10px 0}
@@ -91,7 +112,7 @@
   .dose .n{font-weight:700;font-size:16.5px}
   .dose .m{font-size:14px;color:var(--muted)}
   .dose .t{font-weight:700;font-size:15px;text-align:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-  .fab{position:fixed;inset-inline-end:16px;bottom:94px;z-index:5;display:flex;align-items:center;gap:8px;min-height:56px;padding:0 18px 0 14px;border-radius:28px;border:none;background:var(--primary-dark);color:#fff;font-size:16px;font-weight:700;box-shadow:0 6px 16px rgba(0,0,0,.22);cursor:pointer}
+  .fab{position:fixed;inset-inline-end:16px;bottom:94px;z-index:5;display:flex;align-items:center;gap:8px;min-height:56px;padding:0 18px 0 14px;border-radius:28px;border:none;background:var(--primary-dark);color:var(--on-primary);font-size:16px;font-weight:700;box-shadow:0 6px 16px rgba(0,0,0,.22);cursor:pointer}
   [dir="rtl"] .fab{padding:0 14px 0 18px}
   .empty{text-align:center;padding:24px 8px}
   .empty .big{width:76px;height:76px;border-radius:50%;background:var(--primary-soft);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;margin:8px auto 12px}
@@ -103,7 +124,7 @@
   /* forms */
   .field{margin-bottom:16px}
   .field>label,.field>.lab{display:block;font-weight:700;margin-bottom:6px}
-  input[type=text],input[type=time],textarea{width:100%;font-size:17px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:50px;color:var(--ink);background:#fff}
+  input[type=text],input[type=time],textarea{width:100%;font-size:17px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:50px;color:var(--ink);background:var(--input)}
   input[aria-invalid="true"]{border:2px solid var(--danger)}
   textarea{min-height:80px;resize:vertical}
   .inwrap{display:flex;gap:8px}.inwrap input{flex:1}
@@ -125,8 +146,8 @@
   .srow:last-child{border-bottom:none}
   .srow .g{flex:1;min-width:0}.srow b{display:block;font-size:16px}.srow small{display:block;color:var(--muted);font-size:13.5px}
   button.srow{width:100%;background:none;border:none;border-bottom:1px solid var(--soft);text-align:start;font-size:inherit;color:inherit;cursor:pointer}
-  .switch{width:58px;height:34px;border-radius:17px;border:2px solid var(--line);background:#E3E7E1;position:relative;cursor:pointer;flex:none;padding:0}
-  .switch::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--line);transition:inset-inline-start .15s}
+  .switch{width:58px;height:34px;border-radius:17px;border:2px solid var(--line);background:var(--track);position:relative;cursor:pointer;flex:none;padding:0}
+  .switch::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:24px;height:24px;border-radius:50%;background:var(--thumb);border:2px solid var(--line);transition:inset-inline-start .15s}
   .switch[aria-checked="true"]{background:var(--primary);border-color:var(--primary)}
   .switch[aria-checked="true"]::after{inset-inline-start:25px;border-color:var(--primary)}
   .swst{font-size:13px;font-weight:700;color:var(--muted);min-width:34px;text-align:end}
@@ -156,12 +177,12 @@
   .radio:has(input:checked){border:2px solid var(--primary);background:var(--primary-soft)}
   .radio input{width:24px;height:24px;margin:0;flex:none;accent-color:var(--primary)}
   .radio small{display:block;color:var(--muted);font-size:14px}
-  .note{display:flex;gap:10px;align-items:flex-start;background:#EEF1ED;border-radius:12px;padding:10px 12px;font-size:15px;margin-bottom:14px}
+  .note{display:flex;gap:10px;align-items:flex-start;background:var(--muted-bg);border-radius:12px;padding:10px 12px;font-size:15px;margin-bottom:14px}
   .banner{display:flex;gap:10px;align-items:flex-start;border-radius:14px;padding:10px 12px;margin:6px 0 12px;font-size:15px}
   .banner .g{flex:1}
   .banner.ok{background:var(--primary-soft);border:1px solid var(--primary)}
-  .banner.info{background:#EEF1ED;border:1px solid var(--line)}
-  .banner.warn{background:var(--warn-soft);border:1px solid #B98A3A;color:var(--warn)}
+  .banner.info{background:var(--muted-bg);border:1px solid var(--line)}
+  .banner.warn{background:var(--warn-soft);border:1px solid var(--warn-line);color:var(--warn)}
   /* sheets / dialogs */
   .scrim{position:fixed;inset:0;background:rgba(12,22,12,.5);z-index:30}
   .sheet{position:fixed;left:10px;right:10px;bottom:10px;z-index:31;background:var(--surface);border-radius:24px;padding:20px 18px 12px;box-shadow:0 -6px 24px rgba(0,0,0,.2);max-height:calc(100% - 30px);overflow:auto}
@@ -173,8 +194,8 @@
   .why{font-size:15px;color:var(--muted);margin-bottom:14px}
   .fb{border-top:1px solid var(--soft);margin-top:6px;padding-top:12px}
   .fb .q{font-size:15px;font-weight:700;margin-bottom:8px}
-  .heard{background:#EEF1ED;border-radius:12px;padding:10px 12px;min-height:48px;font-size:17px;margin-bottom:12px}
-  .pulse{width:74px;height:74px;border-radius:50%;background:var(--primary);color:#fff;margin:4px auto 10px;display:flex;align-items:center;justify-content:center;animation:p 1.4s ease-in-out infinite}
+  .heard{background:var(--muted-bg);border-radius:12px;padding:10px 12px;min-height:48px;font-size:17px;margin-bottom:12px}
+  .pulse{width:74px;height:74px;border-radius:50%;background:var(--primary);color:var(--on-primary);margin:4px auto 10px;display:flex;align-items:center;justify-content:center;animation:p 1.4s ease-in-out infinite}
   .pulse svg.i{width:34px;height:34px}
   @keyframes p{0%,100%{box-shadow:0 0 0 0 rgba(46,125,50,.45)}50%{box-shadow:0 0 0 14px rgba(46,125,50,0)}}
   .toast{position:fixed;left:14px;right:14px;bottom:92px;max-width:520px;margin:0 auto;z-index:40;background:#1F2A1F;color:#fff;border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;font-size:15px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
@@ -183,7 +204,7 @@
   .vstat{border:1px solid var(--primary);background:var(--primary-soft);border-radius:14px;padding:10px 12px;margin:6px 0 12px;font-size:15px}
   .vstat .q{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
   .vstat .opt{min-height:44px}
-  .study{border:2px dashed var(--line);border-radius:18px;padding:12px 14px;margin-bottom:14px;background:#FAFBF9}
+  .study{border:2px dashed var(--line);border-radius:18px;padding:12px 14px;margin-bottom:14px;background:var(--study)}
   .study .btn{min-height:46px;font-size:15px}
   .study label{display:flex;gap:8px;align-items:center;min-height:40px}
   .study input{width:24px;height:24px;accent-color:var(--primary)}
@@ -195,35 +216,55 @@
   .annot [data-c]::after{content:attr(data-c);position:absolute;inset-inline-start:-12px;top:-10px;width:24px;height:24px;border-radius:50%;background:#C62828;color:#fff;font:700 13px/24px Arial;text-align:center;z-index:60;box-shadow:0 0 0 2px #fff}
   @media (min-width:900px){.fab{bottom:28px;inset-inline-end:32px}.toast{bottom:28px}}
   /* notification banner (simulates the phone's notification) */
-  .notif{position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top, 0px));z-index:50;max-width:520px;margin:0 auto;display:flex;align-items:stretch;background:rgba(255,255,255,.98);
+  .notif{position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top, 0px));z-index:50;max-width:520px;margin:0 auto;display:flex;align-items:stretch;background:var(--notif);
     border:1px solid var(--soft);border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.22);animation:drop .35s ease-out}
   .notif .nbody{flex:1;display:flex;gap:12px;align-items:center;text-align:start;background:none;border:none;padding:12px 6px 12px 14px;font-size:inherit;color:inherit;cursor:pointer;min-height:72px}
   [dir="rtl"] .notif .nbody{padding:12px 14px 12px 6px}
   .notif .napp{display:block;font-size:12.5px;color:var(--muted);font-weight:700;letter-spacing:.02em}
   .notif b{display:block;font-size:16px}
   .notif .nt{display:block;font-size:14.5px}
-  .notif .logo-s{width:40px;height:40px;border-radius:11px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+  .notif .logo-s{width:40px;height:40px;border-radius:11px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
   .notif .iconbtn{align-self:center}
   @keyframes drop{from{transform:translateY(-120%)}to{transform:none}}
   @media (prefers-reduced-motion:reduce){.notif{animation:none}}
+  /* text size: the whole app scales, so every label, button and touch target grows together */
+  :root{--z:1} :root[data-size="large"]{--z:1.15} :root[data-size="xlarge"]{--z:1.3}
+  body{zoom:var(--z)}
+  .app{min-height:calc(100vh / var(--z))}
+  @media (min-width:900px){ .tabs{height:calc(100vh / var(--z))} }
+  .sizes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+  .size{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:92px;border-radius:16px;border:1px solid var(--line);background:var(--muted-bg);color:var(--ink);font-weight:700;font-size:14px;cursor:pointer}
+  .size .aa{font-weight:700;line-height:1}
+  .size[aria-checked="true"]{border:2px solid var(--primary);background:var(--primary-soft)}
+  /* appearance picker */
+  .themes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+  .theme{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 6px;border-radius:16px;border:1px solid var(--line);background:var(--muted-bg);color:var(--ink);font-size:15px;font-weight:700;cursor:pointer;min-height:124px}
+  .theme[aria-checked="true"]{border:2px solid var(--primary);background:var(--primary-soft)}
+  .mini{width:44px;height:74px;border-radius:9px;display:flex;flex-direction:column;gap:5px;padding:8px 6px;border:1px solid #8B968C}
+  .mini i{display:block;height:7px;border-radius:3px}
+  .mini i:first-child{background:#2E7D32 !important;height:16px}
+  .mini-light{background:#F5F7F4}.mini-light i{background:#C9D3C7}
+  .mini-dark{background:#0F1512}.mini-dark i{background:#34403A}
+  .mini-auto{background:linear-gradient(90deg,#F5F7F4 50%,#0F1512 50%)}.mini-auto i{background:linear-gradient(90deg,#C9D3C7 50%,#34403A 50%)}
+  a.srow{color:inherit;text-decoration:none}
   /* auth */
   .auth{max-width:460px;margin:0 auto;padding:16px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px));min-height:100vh;display:flex;flex-direction:column}
-  .logo{width:96px;height:96px;border-radius:28px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;margin:36px auto 14px;box-shadow:0 10px 24px rgba(46,125,50,.28)}
+  .logo{width:96px;height:96px;border-radius:28px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;margin:36px auto 14px;box-shadow:0 10px 24px rgba(46,125,50,.28)}
   .logo svg.i{width:50px;height:50px;stroke-width:2.2}
-  .seg{display:flex;background:#E7ECE5;border-radius:14px;padding:4px;gap:4px;margin:6px 0 16px}
+  .seg{display:flex;background:var(--seg);border-radius:14px;padding:4px;gap:4px;margin:6px 0 16px}
   .seg button{flex:1;min-height:46px;border:none;border-radius:11px;background:transparent;font-size:15px;font-weight:700;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
   .seg button[aria-checked="true"]{background:var(--surface);color:var(--primary-dark);box-shadow:0 1px 4px rgba(0,0,0,.12)}
-  .phonein{direction:ltr;display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
-  .phonein span{display:flex;align-items:center;padding:0 12px;background:#EEF1ED;font-weight:700;border-inline-end:1px solid var(--line);direction:ltr}
+  .phonein{direction:ltr;display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--input)}
+  .phonein span{display:flex;align-items:center;padding:0 12px;background:var(--muted-bg);font-weight:700;border-inline-end:1px solid var(--line);direction:ltr}
   .phonein input{border:none;border-radius:0;flex:1;direction:ltr;text-align:left}
   .phonein:focus-within{outline:3px solid var(--focus);outline-offset:2px}
   .phonein input:focus-visible{outline:none}
   .pw{position:relative}.pw input{padding-inline-end:84px}
   .pw button{position:absolute;inset-inline-end:4px;top:4px;min-height:42px;padding:0 10px;border:none;background:none;color:var(--primary-dark);font-weight:700;text-decoration:underline;cursor:pointer}
   .otp{font-size:28px!important;letter-spacing:.5em;text-align:center;direction:ltr;font-weight:700}
-  .demo{display:flex;gap:10px;align-items:flex-start;border:1px dashed var(--line);background:#F7F8F6;border-radius:12px;padding:10px 12px;font-size:14.5px;margin-bottom:14px}
+  .demo{display:flex;gap:10px;align-items:flex-start;border:1px dashed var(--line);background:var(--demo);border-radius:12px;padding:10px 12px;font-size:14.5px;margin-bottom:14px}
   .alt{text-align:center;margin-top:auto;padding-top:16px}
-  input[type=email],input[type=password],input[type=tel],input[type=date]{width:100%;font-size:17px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:50px;color:var(--ink);background:#fff}
+  input[type=email],input[type=password],input[type=tel],input[type=date]{width:100%;font-size:17px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:50px;color:var(--ink);background:var(--input)}
   /* services */
   .hdr{display:flex;align-items:center;gap:12px;margin:4px 0 8px}
   .avatar{width:48px;height:48px;border-radius:50%;background:var(--primary-soft);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:19px;flex:none}
@@ -233,7 +274,7 @@
   .svc .medic{width:46px;height:46px}
   .appt{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--soft);border-radius:16px;padding:12px;margin-bottom:8px;width:100%;text-align:start;font-size:inherit;color:inherit;cursor:pointer}
   .appt.past{opacity:.85}
-  .dateblk{width:54px;flex:none;border-radius:12px;background:#E3EEFA;color:#0D47A1;text-align:center;padding:6px 0;line-height:1.15}
+  .dateblk{width:54px;flex:none;border-radius:12px;background:var(--blue-soft);color:var(--blue);text-align:center;padding:6px 0;line-height:1.15}
   .dateblk b{display:block;font-size:20px}
   .dateblk span{font-size:12.5px;font-weight:700}
   .appt .g{flex:1;min-width:0}
@@ -302,19 +343,25 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 /* ============ storage (accounts live on this device only: there is no server in this prototype) ============ */
 const KEY = 'medasst.v3';
 let ROOT = (() => { try{ return JSON.parse(localStorage.getItem(KEY)) || null; }catch(e){ return null; } })() || { lang:'ar', accounts:[], current:null, data:{} };
-const DATA_KEYS = ['name','workEnd','sugOn','voiceOn','soundOn','meds','log','post','hist','blocked','feedback','appts'];
-const blank = () => ({ name:'', workEnd:'17:00', sugOn:true, voiceOn:true, soundOn:true, meds:[], log:{}, post:{}, hist:[], blocked:[], feedback:[], appts:[] });
+const DATA_KEYS = ['name','workEnd','sugOn','voiceOn','soundOn','meds','log','post','hist','blocked','feedback','appts','family','famLog','alerted'];
+const blank = () => ({ name:'', workEnd:'17:00', sugOn:true, voiceOn:true, soundOn:true, meds:[], log:{}, post:{}, hist:[], blocked:[], feedback:[], appts:[], family:[], famLog:[], alerted:{} });
 function persist(){
   ROOT.lang = S.lang; ROOT.current = S.uid;
   if (S.uid){ const d = {}; DATA_KEYS.forEach(k => d[k] = S[k]); ROOT.data[S.uid] = d; }
   try{ localStorage.setItem(KEY, JSON.stringify(ROOT)); }catch(e){}
 }
+if (!ROOT.theme) ROOT.theme = 'auto';
+if (!ROOT.size) ROOT.size = 'normal';
+function applySize(){ document.documentElement.setAttribute('data-size', ROOT.size); }
+applySize();
+function applyTheme(){ const r = document.documentElement; if (ROOT.theme === 'auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', ROOT.theme); }
+applyTheme();
 const hashPw = pw => { let x = 2166136261; for (const ch of 'medasst:' + pw){ x ^= ch.charCodeAt(0); x = Math.imul(x, 16777619) >>> 0; } return x.toString(16); };
 
 /* ============ state ============ */
 const S = Object.assign(blank(), { lang:ROOT.lang || 'ar', uid:null,
   tab:'home', page:null, layer:null, dialog:null, offline:false, toast:null, form:null, histDay:0, vstat:null, voiceUI:null, f1:null, banner:null, shownKeys:{}, auth:{ scr:'welcome', method:'phone' } });
-function signIn(id){ S.uid = id; Object.assign(S, blank(), ROOT.data[id] || {}); const a = ROOT.accounts.find(x => x.id === id); if (a && !S.name) S.name = a.name; S.tab = 'home'; S.page = null; S.layer = null; S.dialog = null; persist(); }
+function signIn(id){ S.uid = id; Object.assign(S, blank(), ROOT.data[id] || {}); const a = ROOT.accounts.find(x => x.id === id); if (a && !S.name) S.name = a.name; S.tab = 'home'; S.page = null; S.layer = null; S.dialog = null; persist(); setTimeout(() => { if (S.uid === id && !document.body.classList.contains('shot')) famAlerts(); }, 1500); }
 function signOut(){ stopListen(); S.notif = null; persist(); S.uid = null; Object.assign(S, blank()); S.layer = null; S.dialog = null; S.auth = { scr:'login', method:'phone' }; persist(); }
 if (ROOT.current && ROOT.accounts.some(a => a.id === ROOT.current)) signIn(ROOT.current);
 
@@ -449,6 +496,17 @@ Object.assign(L.en, {
   eLogin:'The email or password is wrong.', eNoPhone:'No account uses this number. Check it, or create an account.', eNoEmail:'No account uses this email.', eTaken:'An account already uses this. Log in instead.', eCode:'That code is not right. Check it and try again.', welcomeName:n=>`Welcome, ${n}.`,
   resetData:'Delete my medicines and record',
   notifLabel:'Notification', nowLbl:'now', dismiss:'Dismiss notification', notifDoseT:'Time for your medicine', notifPostT:'Your postponed reminder', notifApptT:'Appointment reminder',
+  textSize:'Text size', sz_normal:'Normal', sz_large:'Large', sz_xlarge:'Extra large', sizePreview:'This is how text will look.',
+  family:'Family', familyD:'People who look after you', famH:'Family', famT:'Add someone who helps you with your medicines. If you miss a dose, we let them know.',
+  addFam:'Add family member', famAddH:'Add family member', famEditH:'Edit family member', famName:'Name', famRel:'Relation', rels:{ daughter:'Daughter', son:'Son', spouse:'Husband or wife', sibling:'Brother or sister', other:'Other' },
+  famPhone:'Mobile number', famNotify:'Tell them if I miss a dose', famNotifyD:'They get a message when a dose passes without being recorded.', saveFam:'Save', delFam:'Remove from family',
+  famPrivacy:'Only their name and number are kept, on this phone.', famProto:'Prototype: no real message is sent.', noFam:'No family members yet',
+  famAdded:n=>`${n} added to your family.`, famUpdated:n=>`${n} updated.`, famDeleted:n=>`${n} removed.`, delFamQ:n=>`Remove ${n}?`, delFamT:'They will stop getting messages about missed doses.',
+  famTest:'Send a test message', famTestSent:n=>`Test message sent to ${n}.`, famLogH:'Messages sent', famLogItem:(who,med,tm)=>`Told ${who}: ${med} (${tm}) was not recorded.`,
+  famToast:(who,med)=>`You missed ${med}. We let ${who} know.`, famTold:n=>`${n} was told`, errFamName:'Enter their name.', notifyOn:'Gets a message if you miss a dose', notifyOff:'No messages',
+  appearance:'Appearance', th_light:'Light', th_auto:'Automatic', th_dark:'Dark',
+  contact:'Contact us', contactT:'Tell us if you have a question or a problem.', reportP:'Report a problem', reportPD:'Something does not work, or a reminder did not arrive.', usefulNums:'Useful numbers',
+  moh:'Medical advice (Ministry of Health)', mohD:'Call 937', ambulance:'Ambulance (emergency)', ambD:'Call 997', emergNote:'In an emergency, call 997 straight away. This app does not replace your doctor.', contactRowD:'Feedback, problems and useful numbers.',
   sound:'Reminder sound', soundD:'Play a sound and vibrate when a reminder arrives.', noPost:'There is no postponed reminder today.',
 });
 Object.assign(L.ar, {
@@ -469,11 +527,22 @@ Object.assign(L.ar, {
   eLogin:'البريد أو كلمة المرور غير صحيحة.', eNoPhone:'لا يوجد حساب بهذا الرقم. تأكد منه أو أنشئ حسابًا.', eNoEmail:'لا يوجد حساب بهذا البريد.', eTaken:'يوجد حساب مسجل بهذا من قبل. سجّل الدخول بدلًا من ذلك.', eCode:'الرمز غير صحيح. تأكد منه وحاول مرة ثانية.', welcomeName:n=>`أهلًا بك، ${n}.`,
   resetData:'حذف أدويتي وسجلي',
   notifLabel:'إشعار', nowLbl:'الآن', dismiss:'إغلاق الإشعار', notifDoseT:'حان وقت دوائك', notifPostT:'تذكيرك المؤجل', notifApptT:'تذكير بموعد',
+  textSize:'حجم الخط', sz_normal:'عادي', sz_large:'كبير', sz_xlarge:'كبير جدًا', sizePreview:'هكذا سيظهر النص.',
+  family:'العائلة', familyD:'من يتابع معك أدويتك', famH:'العائلة', famT:'أضف شخصًا يساعدك في أدويتك. إذا فاتتك جرعة نخبره.',
+  addFam:'إضافة فرد من العائلة', famAddH:'إضافة فرد من العائلة', famEditH:'تعديل فرد من العائلة', famName:'الاسم', famRel:'صلة القرابة', rels:{ daughter:'ابنتي', son:'ابني', spouse:'زوجي أو زوجتي', sibling:'أخي أو أختي', other:'أخرى' },
+  famPhone:'رقم الجوال', famNotify:'أخبره إذا فاتتني جرعة', famNotifyD:'تصله رسالة إذا مر وقت الجرعة ولم تُسجّل.', saveFam:'حفظ', delFam:'إزالة من العائلة',
+  famPrivacy:'نحفظ الاسم والرقم فقط، في هذا الجوال.', famProto:'نموذج تجريبي: لا تُرسل رسالة حقيقية.', noFam:'لا يوجد أفراد بعد',
+  famAdded:n=>`تمت إضافة ${n} للعائلة.`, famUpdated:n=>`تم تعديل ${n}.`, famDeleted:n=>`تمت إزالة ${n}.`, delFamQ:n=>`إزالة ${n}؟`, delFamT:'تتوقف رسائل الجرعات الفائتة عنه.',
+  famTest:'إرسال رسالة تجريبية', famTestSent:n=>`تم إرسال رسالة تجريبية إلى ${n}.`, famLogH:'الرسائل المرسلة', famLogItem:(who,med,tm)=>`أخبرنا ${who}: ${med} (${tm}) لم تُسجّل.`,
+  famToast:(who,med)=>`فاتتك ${med}. أخبرنا ${who}.`, famTold:n=>`تم إخبار ${n}`, errFamName:'الاسم مطلوب.', notifyOn:'تصله رسالة إذا فاتتك جرعة', notifyOff:'بدون رسائل',
+  appearance:'المظهر', th_light:'فاتح', th_auto:'تلقائي', th_dark:'داكن',
+  contact:'تواصل معنا', contactT:'أخبرنا إن كان عندك سؤال أو مشكلة.', reportP:'الإبلاغ عن مشكلة', reportPD:'شيء ما يشتغل، أو تذكير ما وصل.', usefulNums:'أرقام مفيدة',
+  moh:'استشارة طبية (وزارة الصحة)', mohD:'اتصل على 937', ambulance:'الإسعاف (الطوارئ)', ambD:'اتصل على 997', emergNote:'في الحالات الطارئة اتصل على 997 فورًا. هذا التطبيق لا يغني عن طبيبك.', contactRowD:'الآراء والمشاكل والأرقام المفيدة.',
   sound:'صوت التذكير', soundD:'تشغيل صوت واهتزاز لما يجي التذكير.', noPost:'لا يوجد تذكير مؤجل اليوم.',
 });
 const COLORS = { green:['#2E7D32','#E6F1E7'], blue:['#1565C0','#E3EEFA'], orange:['#B45309','#FDF0E1'], purple:['#6A3FA0','#F0EAF8'], red:['#B3261E','#FBEDEC'], grey:['#4B544B','#EEF1ED'] };
 const FORMICON = { tablet:'pill', capsule:'capsule', injection:'syringe', drops:'drop', syrup:'bottle' };
-const medIc = (m, big) => `<span class="medic" style="background:${COLORS[m.color][1]};color:${COLORS[m.color][0]}">${ic(FORMICON[m.form])}</span>`;
+const medIc = (m, big) => `<span class="medic hue-${m.color}">${ic(FORMICON[m.form])}</span>`;
 const unit = m => { const u = L[S.lang].units[m.form]; return m.amount === 1 ? u[0] : u[1]; };
 const doseTxt = m => t('tabletsDose')(m.amount, unit(m));
 const medName = m => esc(m.name);
@@ -628,6 +697,8 @@ function loadStudy(){
   S.appts = [{ id:'a1', title:S.lang==='ar'?'عيادة السكر':'Diabetes clinic', place:S.lang==='ar'?'مركز الرعاية الصحية الأولية':'Primary health care centre', date:isoDay(addDays(now(), 3)), time:'10:30', remind:'1d', notes:'' }];
   for (let i = 1; i <= 6; i++){ const d = addDays(now(), -i);
     dosesFor(d).forEach((x, j) => { if ((i + j) % 5 !== 0) S.log[x.k] = { s:'taken', at:new Date(x.when.getTime() + 6*60e3).toISOString() }; }); }
+  dosesFor(now()).forEach(x => { if (x.when < now() && x.m.id !== 'vitd') S.log[x.k] = { s:'taken', at:new Date(x.when.getTime() + 5*60e3).toISOString() }; });
+  S.family = [{ id:'f1', name:S.lang==='ar'?'سارة':'Sara', rel:'daughter', phone:'512300000', notify:true }]; S.famLog = []; S.alerted = {};
   seedHistory('usual'); persist();
 }
 
@@ -661,12 +732,12 @@ function topBar(title, backFn){
 function doseRow(d){
   const st = status(d), m = d.m;
   return `<button class="dose ${st.s==='missed'?'missed':''}" data-dose="${esc(d.k)}" ${st.s==='missed'?'data-c="10"':''}>
-    ${medIc(m)}<span class="g"><span class="n">${medName(m)}</span><span class="m" style="display:block">${doseTxt(m)} · ${t('food')[m.food]}</span></span>
+    ${medIc(m)}<span class="g"><span class="n">${medName(m)}</span><span class="m" style="display:block">${doseTxt(m)} · ${t('food')[m.food]}</span>${st.s==='missed' && S.alerted[d.k] ? `<span class="m" style="display:block">${ic('msg','s')} ${t('famTold')(esc(S.alerted[d.k]))}</span>` : ''}</span>
     <span class="t"><span>${T(d.when)}</span>${chip(st)}</span></button>`;
 }
 function ring(a, b){ const r = 26, c = 2*Math.PI*r, p = b ? a/b : 0;
-  return `<svg class="ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="${r}" stroke="#E0E6DE"/><circle cx="32" cy="32" r="${r}" stroke="#2E7D32" stroke-dasharray="${c*p} ${c}" transform="rotate(-90 32 32)" stroke-linecap="round"/>
-    <text x="32" y="37" text-anchor="middle" font-size="${String(a).length+String(b).length > 3 ? 12 : 15}" font-weight="700" fill="#1A1F1A">${N(a)}/${N(b)}</text></svg>`; }
+  return `<svg class="ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="${r}" style="stroke:var(--track)"/><circle cx="32" cy="32" r="${r}" style="stroke:var(--primary)" stroke-dasharray="${c*p} ${c}" transform="rotate(-90 32 32)" stroke-linecap="round"/>
+    <text x="32" y="37" text-anchor="middle" font-size="${String(a).length+String(b).length > 3 ? 12 : 15}" font-weight="700" style="fill:var(--ink)">${N(a)}/${N(b)}</text></svg>`; }
 const VIEW = {};
 function nextAppt(){ const n = now(); return [...S.appts].map(a => ({ ...a, when:at(a.time, new Date(a.date+'T00:00')) })).filter(a => a.when >= n).sort((a,b) => a.when - b.when)[0]; }
 function apptCard(a, past){
@@ -681,10 +752,10 @@ VIEW.home = () => {
   const head = `${topBar()}<div class="hdr"><span class="avatar" aria-hidden="true">${esc(initial)}</span><div><p class="hello" style="font-weight:700;color:var(--ink);font-size:16px">${S.name ? t('hiName')(esc(S.name)) : t('hi')}</p>
     <p class="muted small" style="margin:0" data-c="12">${gDate(now())} · ${hDate(now())}</p></div></div><h1 id="h" tabindex="-1" class="sr">${t('home')}</h1>
     ${S.banner ? `<div class="banner ok" role="status">${ic('check')}<span class="g">${S.banner}</span></div>` : ''}`;
-  const svc = (ico, label, actn, col) => `<button class="svc" data-act="${actn}"><span class="medic" style="background:${COLORS[col][1]};color:${COLORS[col][0]}">${ic(ico)}</span>${label}</button>`;
+  const svc = (ico, label, actn, col) => `<button class="svc" data-act="${actn}"><span class="medic hue-${col}">${ic(ico)}</span>${label}</button>`;
   const grid = `<h2 style="margin-top:14px">${t('svc')}</h2><div class="grid" data-c="27">
     ${svc('pill', t('svcMeds'), 'svcMeds', 'green')}${svc('cal', t('svcAppts'), 'svcAppts', 'blue')}${svc('list', t('svcHist'), 'svcHist', 'orange')}
-    ${svc('plus', t('svcAdd'), 'add', 'green')}${svc('msg', t('svcFb'), 'feedback', 'purple')}${svc('user', t('svcAcct'), 'svcAcct', 'grey')}</div>`;
+    ${svc('user', t('family'), 'family', 'green')}${svc('msg', t('svcFb'), 'feedback', 'purple')}${svc('phone', t('contact'), 'contact', 'grey')}</div>`;
   const na = nextAppt();
   const apptBox = na ? `<h2>${t('nextAppt')}</h2>${apptCard(na)}` : '';
   if (!S.meds.length) return `${head}<div class="card empty" style="margin-top:10px"><div class="big">${ic('pill')}</div><h2 style="margin-top:0">${t('noMeds')}</h2><p class="muted">${t('noMedsT')}</p>
@@ -728,6 +799,41 @@ function apptForm(){
   <button class="btn primary" data-act="apptSave">${ic('check')}${t('saveAppt')}</button>
   ${f.id ? `<button class="btn ghost" data-act="apptDel" style="color:var(--danger)">${ic('trash')}${t('delAppt')}</button>` : `<button class="btn secondary" data-act="apptCancel">${t('cancel')}</button>`}`;
 }
+function famAlerts(){
+  const who = S.family.filter(f => f.notify); if (!who.length) return;
+  const names = who.map(f => f.name).join(S.lang==='ar' ? ' و' : ' and ');
+  const meds = [];
+  dosesFor(now()).forEach(d => { if (status(d).s === 'missed' && !S.alerted[d.k]){
+    S.alerted[d.k] = names; S.famLog.unshift({ at:now().toISOString(), who:names, med:d.m.name, time:d.time }); meds.push(d.m.name); } });
+  if (!meds.length) return;
+  S.famLog = S.famLog.slice(0, 20); persist();
+  if (!S.page && S.tab === 'home' && !S.layer && !S.dialog) renderKeep();
+  if (!S.layer && !S.dialog) toast(t('famToast')(esc(names), esc(meds.join(S.lang==='ar' ? ' و' : ' and '))), null, 'info');
+}
+function famPage(){
+  return `${topBar(null,'pageBack')}<h1 id="h" tabindex="-1">${t('famH')}</h1><p class="muted">${t('famT')}</p>
+    <button class="btn primary" data-act="addFam" data-c="31">${ic('plus')}${t('addFam')}</button>
+    ${S.family.length ? `<div class="set">${S.family.map(f => `<button class="srow" data-fam="${f.id}"><span class="avatar" aria-hidden="true" style="width:44px;height:44px;font-size:17px">${esc(f.name.charAt(0))}</span>
+      <span class="g"><b>${esc(f.name)}</b><small>${t('rels')[f.rel]} · ${f.notify ? t('notifyOn') : t('notifyOff')}</small></span>${ic('chev','flip')}</button>`).join('')}</div>
+      <button class="btn secondary" data-act="famTest">${ic('msg')}${t('famTest')}</button>`
+    : `<div class="empty"><div class="big">${ic('user')}</div><h2>${t('noFam')}</h2></div>`}
+    ${S.famLog.length ? `<h2>${t('famLogH')}</h2><div class="set">${S.famLog.slice(0,5).map(l => `<div class="srow">${ic('msg')}<span class="g"><b style="font-weight:600;font-size:15px">${t('famLogItem')(esc(l.who), esc(l.med), T(l.time))}</b><small>${esc(gDate(new Date(l.at)))} · ${T(new Date(l.at))}</small></span></div>`).join('')}</div>` : ''}
+    <p class="note">${ic('info')}<span>${t('famPrivacy')} ${t('famProto')}</span></p>`;
+}
+function famForm(){
+  const f = S.ffam;
+  return `${topBar(null,'famCancel')}<h1 id="h" tabindex="-1">${f.id ? t('famEditH') : t('famAddH')}</h1>
+  ${f.errs && f.errs.length ? `<div class="errbox" role="alert" tabindex="-1" id="errSum"><b>${t('errSum')(f.errs.length)}</b>${f.errs.map(e => `<div class="err">${ic('alert')}${e}</div>`).join('')}</div>` : ''}
+  <div class="field"><label for="fmName">${t('famName')}</label><input type="text" id="fmName" value="${esc(f.name)}" autocomplete="off" ${f.eN?'aria-invalid="true" aria-describedby="fmNameE"':''}>${f.eN ? `<p class="err" id="fmNameE">${ic('alert')}${t('errFamName')}</p>` : ''}</div>
+  <div class="field"><span class="lab" id="lrel">${t('famRel')}</span><div class="opts" role="radiogroup" aria-labelledby="lrel">
+    ${Object.keys(L[S.lang].rels).map(k => `<button class="opt" role="radio" aria-checked="${f.rel===k}" data-rel="${k}">${t('rels')[k]}</button>`).join('')}</div></div>
+  <div class="field"><label for="fmPhone">${t('famPhone')}</label><div class="phonein"><span>+966</span><input type="tel" id="fmPhone" inputmode="numeric" placeholder="5XXXXXXXX" value="${esc(f.phone)}" ${f.eP?'aria-invalid="true" aria-describedby="fmPhoneE"':''}></div>${f.eP ? `<p class="err" id="fmPhoneE">${ic('alert')}${t('ePhone')}</p>` : ''}</div>
+  <div class="set">${sw('famnotify', f.notify, t('famNotify'), t('famNotifyD'))}</div>
+  <p class="note">${ic('info')}<span>${t('famPrivacy')}</span></p>
+  <button class="btn primary" data-act="famSave">${ic('check')}${t('saveFam')}</button>
+  ${f.id ? `<button class="btn ghost" data-act="famDel" style="color:var(--danger)">${ic('trash')}${t('delFam')}</button>` : `<button class="btn secondary" data-act="famCancel">${t('cancel')}</button>`}`;
+}
+function keepFam(){ const f = S.ffam; if (!f) return; const a = document.getElementById('fmName'), b = document.getElementById('fmPhone'); if (a) f.name = a.value; if (b) f.phone = b.value; }
 function apptAlerts(){
   const n = now();
   S.appts.forEach(a => { if (a.remind === 'none') return; const when = at(a.time, new Date(a.date+'T00:00')); const lead = a.remind === '1d' ? 864e5 : 2*3600e3;
@@ -745,7 +851,7 @@ VIEW.hist = () => {
   const cells = days.map((d, i) => { const ds = dosesFor(d), past = ds.filter(x => x.when <= now()), a = ds.filter(x => status(x).s === 'taken').length;
     tot += past.length; tk += a;
     const kind = !past.length ? 'nodata' : a >= past.length ? 'all' : a > 0 ? 'some' : 'none';
-    const look = { all:['var(--primary)','#fff','check'], some:['var(--warn-soft)','var(--warn)','minus'], none:['var(--danger-soft)','var(--danger)','x'], nodata:['#EEF1ED','var(--muted)','circle'] }[kind];
+    const look = { all:['var(--primary)','var(--on-primary)','check'], some:['var(--warn-soft)','var(--warn)','minus'], none:['var(--danger-soft)','var(--danger)','x'], nodata:['var(--muted-bg)','var(--muted)','circle'] }[kind];
     const sel = (6 - i) === S.histDay;
     return `<button class="day" aria-pressed="${sel}" data-day="${6-i}" aria-label="${esc(gDate(d))}: ${t('legend')[kind]}"><span>${wd(d)}</span><b>${dnum(d)}</b>
       <span class="dot" style="background:${look[0]};color:${look[1]}">${ic(look[2])}</span></button>`; }).join('');
@@ -766,9 +872,16 @@ VIEW.acct = () => { const acc = ROOT.accounts.find(a => a.id === S.uid) || {}; r
     <div class="srow" style="display:block"><b id="lq">${t('lang')}</b><div class="opts" role="radiogroup" aria-labelledby="lq" style="margin-top:8px">
       <button class="opt" role="radio" lang="ar" aria-checked="${S.lang==='ar'}" data-setlang="ar">العربية</button><button class="opt" role="radio" lang="en" aria-checked="${S.lang==='en'}" data-setlang="en">English</button></div></div>
     <div class="srow"><span class="g"><label for="workIn"><b>${t('workEnd')}</b></label></span><input type="time" id="workIn" value="${S.workEnd}" style="width:140px"></div></div>
+  <div class="set" data-c="32"><div class="srow" style="display:block"><b id="tsq">${t('textSize')}</b><div class="sizes" role="radiogroup" aria-labelledby="tsq">
+    ${[['normal',18],['large',23],['xlarge',28]].map(([k,px]) => `<button class="size" role="radio" aria-checked="${ROOT.size===k}" data-size-set="${k}"><span class="aa" aria-hidden="true" style="font-size:${px}px">${S.lang==='ar'?'أ':'A'}</span>${t('sz_'+k)}</button>`).join('')}</div>
+    <p class="muted small" style="margin:8px 0 0">${t('sizePreview')}</p></div></div>
+  <div class="set"><div class="srow" style="display:block"><b id="thq">${t('appearance')}</b><div class="themes" role="radiogroup" aria-labelledby="thq">
+    ${['light','auto','dark'].map(k => `<button class="theme" role="radio" aria-checked="${ROOT.theme===k}" data-theme-set="${k}"><span class="mini mini-${k}" aria-hidden="true"><i></i><i></i><i></i></span>${t('th_'+k)}</button>`).join('')}</div></div></div>
   <div class="set">${sw('sug', S.sugOn, t('sug'), t('sugD'), 17)}${sw('voice', S.voiceOn, t('voice'), t('voiceD'))}${sw('sound', S.soundOn, t('sound'), t('soundD'))}</div>
-  <div class="set"><button class="srow" data-act="feedback" data-c="22"><span class="medic" style="background:var(--primary-soft);color:var(--primary-dark)">${ic('msg')}</span><span class="g"><b>${t('fbRow')}</b><small>${t('fbRowD')}</small></span>${ic('chev','flip')}</button>
-    <div class="srow"><span class="medic" style="background:#EEF1ED;color:var(--muted)">${ic('info')}</span><span class="g"><b>${t('about')}</b><small>${t('aboutD')}</small></span></div></div>
+  <div class="set"><button class="srow" data-act="family" data-c="31"><span class="medic hue-green">${ic('user')}</span><span class="g"><b>${t('family')}</b><small>${t('familyD')}</small></span>${ic('chev','flip')}</button>
+    <button class="srow" data-act="contact" data-c="30"><span class="medic hue-blue">${ic('phone')}</span><span class="g"><b>${t('contact')}</b><small>${t('contactRowD')}</small></span>${ic('chev','flip')}</button>
+    <button class="srow" data-act="feedback" data-c="22"><span class="medic hue-green">${ic('msg')}</span><span class="g"><b>${t('fbRow')}</b><small>${t('fbRowD')}</small></span>${ic('chev','flip')}</button>
+    <div class="srow"><span class="medic hue-grey">${ic('info')}</span><span class="g"><b>${t('about')}</b><small>${t('aboutD')}</small></span></div></div>
   ${S.uid === 'test-hind' ? `<div class="study"><b>${t('study')}</b><p class="muted small">${t('studyD')}</p>
     <button class="btn secondary" data-act="loadStudy">${ic('flask')}${t('loadStudy')}</button>
     <button class="btn secondary" data-act="sendRem">${ic('bell')}${t('sendRem')}</button>
@@ -817,6 +930,14 @@ function medPage(){
     ${m.notes ? `<p class="note">${ic('info')}<span>${esc(m.notes)}</span></p>` : ''}
     <button class="btn primary" data-act="editMed">${ic('edit')}${t('detEdit')}</button>
     <button class="btn ghost" data-act="formDel" style="color:var(--danger)">${ic('trash')}${t('delMed')}</button>`;
+}
+function contactPage(){
+  const row = (attrs, ico, hue, title, sub) => { const tag = attrs.startsWith('href') ? 'a' : 'button'; return `<${tag} class="srow" ${attrs}><span class="medic hue-${hue}">${ic(ico)}</span><span class="g"><b>${title}</b><small>${sub}</small></span>${ic('chev','flip')}</${tag}>`; };
+  return `${topBar(null,'pageBack')}<h1 id="h" tabindex="-1">${t('contact')}</h1><p class="muted">${t('contactT')}</p>
+    <div class="set">${row('data-act="feedback"', 'msg', 'green', t('svcFb'), t('fbRowD'))}${row('data-act="reportProblem"', 'alert', 'orange', t('reportP'), t('reportPD'))}</div>
+    <h2>${t('usefulNums')}</h2>
+    <div class="set">${row('href="tel:937"', 'phone', 'blue', t('moh'), `<bdi>${t('mohD')}</bdi>`)}${row('href="tel:997"', 'phone', 'red', t('ambulance'), `<bdi>${t('ambD')}</bdi>`)}</div>
+    <p class="note">${ic('info')}<span>${t('emergNote')}</span></p>`;
 }
 function fbPage(){
   const f = S.f1 || (S.f1 = { rate:null, topic:null, note:'', err:false, sent:false });
@@ -911,6 +1032,10 @@ function dialogHTML(){
         : ['off','nodue'].includes(v.why) ? `<button class="btn secondary" data-act="dlgClose">${t('useBtns')}</button>` : typeBox}`; }
     return `<div class="scrim" data-act="dlgClose"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dh"><button class="iconbtn x" data-act="dlgClose" aria-label="${t('stop')}">${ic('x')}</button>${body}</div>`;
   }
+  if (S.dialog === 'delFam'){ const f = S.family.find(x => x.id === S.ffam.id);
+    return `<div class="scrim" data-act="dlgClose"></div><div class="sheet" role="alertdialog" aria-modal="true" aria-labelledby="dh" aria-describedby="dd">
+      <div class="hero bad" style="width:64px;height:64px;margin-top:2px">${ic('trash')}</div><h2 id="dh" tabindex="-1">${t('delFamQ')(esc(f.name))}</h2><p id="dd" class="muted">${t('delFamT')}</p>
+      <button class="btn danger" data-act="delFamYes">${ic('trash')}${t('delFam')}</button><button class="btn secondary" data-act="dlgClose">${t('keepIt')}</button></div>`; }
   if (S.dialog === 'delAppt'){ const a = S.appts.find(x => x.id === S.aform.id);
     return `<div class="scrim" data-act="dlgClose"></div><div class="sheet" role="alertdialog" aria-modal="true" aria-labelledby="dh" aria-describedby="dd">
       <div class="hero bad" style="width:64px;height:64px;margin-top:2px">${ic('trash')}</div><h2 id="dh" tabindex="-1">${t('delApptQ')(esc(a.title))}</h2><p id="dd" class="muted">${t('delApptT')}</p>
@@ -964,7 +1089,7 @@ function render(focusH){
   document.documentElement.lang = S.lang; dev.lang = S.lang; dev.dir = S.lang === 'ar' ? 'rtl' : 'ltr';
   if (!S.uid){ view.innerHTML = authView(); fabBox.innerHTML = ''; tabs.hidden = true; layer.innerHTML = ''; dlg.innerHTML = ''; [view].forEach(el => el.removeAttribute('inert')); renderToast(); if (focusH && !first) focusHeading(view); first = false; wireAuth(); return; }
   tabs.hidden = false;
-  const PG = { add:formPage, med:medPage, fb:fbPage, hist:VIEW.hist, appt:apptForm };
+  const PG = { add:formPage, med:medPage, fb:fbPage, hist:VIEW.hist, appt:apptForm, contact:contactPage, family:famPage, famform:famForm };
   const pg = S.page ? PG[S.page.name]() : VIEW[S.tab]();
   view.innerHTML = pg; fabBox.innerHTML = (!S.page && !S.layer && S.tab === 'home' && S.meds.length) ? `<button class="fab" data-act="mic" data-c="13">${ic('mic')}${t('speak')}</button>` : '';
   tabs.innerHTML = `<div class="navbrand">${ic('pill')}${t('app')}</div>` + TABS.map(([k,i]) => `<button data-tab="${k}" ${S.tab===k?'aria-current="page"':''}><span class="tab-ic">${ic(i)}</span>${t(k)}</button>`).join('');
@@ -1079,6 +1204,7 @@ function authAct(a){
   }
 }
 function wire(){
+  ['fmName','fmPhone'].forEach(id => { const el = document.getElementById(id); if (el) el.onchange = keepFam; });
   ['aTitle','aPlace','aDate','aTime','aNotes'].forEach(id => { const el = document.getElementById(id); if (el) el.onchange = keepAppt; });
   const tf = document.getElementById('typeForm'); if (tf) tf.onsubmit = e => { e.preventDefault(); const v = document.getElementById('typeIn').value.trim(); if (v) heard(v, null); };
   const ni = document.getElementById('nameIn'); if (ni) ni.onchange = () => { S.name = ni.value.trim(); persist(); };
@@ -1116,7 +1242,12 @@ dev.addEventListener('click', e => {
   if (d.later){ const x = dosesFor(now()).find(y => y.k === d.later); S.layer = { scr:'rem', k:x.k, med:x.m.id, time:x.time }; return openPost(); }
   if (d.med){ return go('meds', { name:'med', id:d.med }); }
   if (d.day !== undefined){ S.histDay = +d.day; render(); dev.querySelector(`[data-day="${d.day}"]`).focus(); return; }
-  if (d.sw){ if (d.sw === 'sug') S.sugOn = !S.sugOn; else if (d.sw === 'sound') S.soundOn = !S.soundOn; else S.voiceOn = !S.voiceOn; persist(); render(); dev.querySelector(`[data-sw="${d.sw}"]`).focus(); return; }
+  if (d.sw && d.sw !== 'famnotify'){ if (d.sw === 'sug') S.sugOn = !S.sugOn; else if (d.sw === 'sound') S.soundOn = !S.soundOn; else S.voiceOn = !S.voiceOn; persist(); render(); dev.querySelector(`[data-sw="${d.sw}"]`).focus(); return; }
+  if (d.sizeSet){ ROOT.size = d.sizeSet; persist(); applySize(); render(); dev.querySelector(`[data-size-set="${d.sizeSet}"]`).focus(); return; }
+  if (d.fam){ const f = S.family.find(x => x.id === d.fam); S.ffam = { ...f, errs:[] }; return go(S.tab, { name:'famform' }); }
+  if (d.rel){ keepFam(); S.ffam.rel = d.rel; renderKeep(); dev.querySelector(`[data-rel="${d.rel}"]`).focus(); return; }
+  if (d.sw === 'famnotify'){ keepFam(); S.ffam.notify = !S.ffam.notify; renderKeep(); dev.querySelector('[data-sw="famnotify"]').focus(); return; }
+  if (d.themeSet){ ROOT.theme = d.themeSet; persist(); applyTheme(); render(); dev.querySelector(`[data-theme-set="${d.themeSet}"]`).focus(); return; }
   if (d.setlang){ S.lang = d.setlang; persist(); render(); dev.querySelector(`[data-setlang="${d.setlang}"]`).focus(); return; }
   if (d.pick){ S.form.name = d.pick; S.form.errName = false; renderKeep(); document.getElementById('fName').focus(); return; }
   if (d.form){ S.form.form = d.form; renderKeep(); dev.querySelector(`[data-form="${d.form}"]`).focus(); return; }
@@ -1167,7 +1298,22 @@ function act(a, b){
     case 'delYes': { const id = S.form ? S.form.id : S.page.id, m = medById(id), idx = S.meds.indexOf(m); S.meds = S.meds.filter(x => x.id !== id); persist(); S.form = null; S.dialog = null; go('meds');
       toast(t('deleted')(esc(m.name)), () => { S.meds.splice(idx, 0, m); persist(); render(); }); return; }
     case 'pageBack': S.f1 = null; return go(S.tab);
-    case 'feedback': S.f1 = null; return go('acct', { name:'fb' });
+    case 'feedback': S.f1 = null; return go(S.tab, { name:'fb' });
+    case 'contact': return go(S.tab, { name:'contact' });
+    case 'family': return go(S.tab, { name:'family' });
+    case 'addFam': S.ffam = { id:null, name:'', rel:'daughter', phone:'', notify:true, errs:[] }; return go(S.tab, { name:'famform' });
+    case 'famCancel': S.ffam = null; return go(S.tab, { name:'family' });
+    case 'famSave': { keepFam(); const f = S.ffam; f.name = f.name.trim(); const ph = f.phone ? normPhone(f.phone) : '';
+      f.eN = !f.name; f.eP = f.notify && !okPhone(ph); f.errs = [f.eN && t('errFamName'), f.eP && t('ePhone')].filter(Boolean);
+      if (f.errs.length){ render(); const es = document.getElementById('errSum'); es && es.focus(); return; }
+      const m = { id:f.id || uid(), name:f.name, rel:f.rel, phone:ph, notify:f.notify };
+      if (f.id) S.family = S.family.map(x => x.id === f.id ? m : x); else S.family.push(m);
+      persist(); S.ffam = null; go(S.tab, { name:'family' }); toast(f.id ? t('famUpdated')(esc(m.name)) : t('famAdded')(esc(m.name))); return; }
+    case 'famDel': keepFam(); return openDialog('delFam');
+    case 'delFamYes': { const id = S.ffam.id, f = S.family.find(x => x.id === id), idx = S.family.indexOf(f); S.family = S.family.filter(x => x.id !== id); persist(); S.ffam = null; S.dialog = null; go(S.tab, { name:'family' });
+      toast(t('famDeleted')(esc(f.name)), () => { S.family.splice(idx, 0, f); persist(); render(); }); return; }
+    case 'famTest': { const names = S.family.map(f => f.name).join(S.lang==='ar' ? ' و' : ' and '); toast(t('famTestSent')(esc(names)) + ' ' + t('famProto'), null, 'info'); return; }
+    case 'reportProblem': S.f1 = { rate:null, topic:3, note:'', err:false, sent:false }; return go(S.tab, { name:'fb' });
     case 'sendFb': if (S.f1.rate === null){ S.f1.err = true; render(); dev.querySelector('[data-rate="0"]').focus(); announce(t('f1err')); return; }
       logFb({ type:'app', rating:S.f1.rate, topic:S.f1.topic, note:S.f1.note }); S.f1.sent = true; return render(true);
     case 'dictNote': return dictInto('fbNote', v => { S.f1.note = v; });
@@ -1231,7 +1377,7 @@ document.addEventListener('keydown', e => {
 /* ============ real-time reminders (while the app is open) ============ */
 setInterval(() => {
   if (S.layer || S.dialog || !S.uid) return;
-  apptAlerts();
+  apptAlerts(); famAlerts();
   for (const d of dosesFor(now())){
     const st = status(d), p = S.post[d.k];
     const due = st.s === 'due' && (now() - (p ? new Date(p.to) : d.when)) < 120e3;
@@ -1247,6 +1393,8 @@ const tick = {};
 (function start(){
   const q = new URLSearchParams(location.search);
   if (q.get('lang')) S.lang = q.get('lang') === 'en' ? 'en' : 'ar';
+  if (q.get('theme')){ ROOT.theme = q.get('theme'); applyTheme(); }
+  if (q.get('size')){ ROOT.size = q.get('size'); applySize(); }
   if (q.has('annot')) document.body.classList.add('annot');
   if (q.has('shot')) document.body.classList.add('shot');
   const h = location.hash.slice(1);
@@ -1256,7 +1404,7 @@ const tick = {};
     render(); return; }
   if (q.has('shot')){ const acc = ensureTest(); signIn(acc.id); }
   if (!S.uid){ render(); return; }
-  const FIG = ['notif','rem','post','sug','set','taken','undo','off','voice','vconfirm','add','med','fb','returned','appt-add','hist-page'];
+  const FIG = ['family','fam-add','contact','notif','rem','post','sug','set','taken','undo','off','voice','vconfirm','add','med','fb','returned','appt-add','hist-page'];
   const shot = q.has('shot');
   if (shot && (FIG.includes(h) || ['home','meds','appts','acct'].includes(h))){ loadStudy(); S.histModeSel = 'usual';
     dosesFor(now()).forEach(x => { if (x.when < now() && x.m.id !== 'vitd' && x.m.id !== 'bp') S.log[x.k] = { s:'taken', at:new Date(x.when.getTime()+5*60e3).toISOString() }; }); }
@@ -1281,6 +1429,9 @@ const tick = {};
     case 'add': S.tab = 'meds'; S.form = { id:null, name:'', form:'tablet', amount:1, times:['09:00'], food:'any', color:'green', notes:'', errs:[] }; S.page = { name:'add' }; break;
     case 'med': S.tab = 'meds'; S.page = { name:'med', id:'dia' }; break;
     case 'fb': S.tab = 'acct'; S.page = { name:'fb' }; break;
+    case 'contact': S.tab = 'acct'; S.page = { name:'contact' }; break;
+    case 'family': S.tab = 'acct'; S.page = { name:'family' }; famAlerts(); S.toast = null; break;
+    case 'fam-add': S.tab = 'acct'; S.ffam = { id:null, name:'', rel:'daughter', phone:'', notify:true, errs:[] }; S.page = { name:'famform' }; break;
   }
   render();
 })();
