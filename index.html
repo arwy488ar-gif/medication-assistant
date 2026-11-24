@@ -212,7 +212,9 @@
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   @media (prefers-reduced-motion:reduce){.pulse{animation:none}.switch::after{transition:none}}
   /* numbered callouts for report figures (?annot) */
-  .annot [data-c]{position:relative}
+  .annot [data-c]:not(.notif):not(.fab):not(.sheet){position:relative}
+  .annot [inert] [data-c]::after{display:none}
+  .annot [data-c]::after{opacity:.95}
   .annot [data-c]::after{content:attr(data-c);position:absolute;inset-inline-start:-12px;top:-10px;width:24px;height:24px;border-radius:50%;background:#C62828;color:#fff;font:700 13px/24px Arial;text-align:center;z-index:60;box-shadow:0 0 0 2px #fff}
   @media (min-width:900px){.fab{bottom:28px;inset-inline-end:32px}.toast{bottom:28px}}
   /* notification banner (simulates the phone's notification) */
