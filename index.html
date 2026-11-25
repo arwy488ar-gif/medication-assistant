@@ -1105,7 +1105,7 @@ function doIntent(intent, text){
 const fabBox = document.getElementById('fabBox'), view = document.getElementById('view'), tabs = document.getElementById('tabs'), layer = document.getElementById('layer'), dlg = document.getElementById('dlg'), dev = document.getElementById('dev');
 let first = true;
 function render(focusH){
-  document.documentElement.lang = S.lang; dev.lang = S.lang; dev.dir = S.lang === 'ar' ? 'rtl' : 'ltr';
+  document.documentElement.lang = S.lang; document.documentElement.dir = S.lang === 'ar' ? 'rtl' : 'ltr'; dev.lang = S.lang; dev.dir = S.lang === 'ar' ? 'rtl' : 'ltr';
   if (!S.uid){ view.innerHTML = authView(); fabBox.innerHTML = ''; tabs.hidden = true; layer.innerHTML = ''; dlg.innerHTML = ''; [view].forEach(el => el.removeAttribute('inert')); renderToast(); if (focusH && !first) focusHeading(view); first = false; wireAuth(); return; }
   tabs.hidden = false;
   const PG = { add:formPage, med:medPage, fb:fbPage, hist:VIEW.hist, appt:apptForm, contact:contactPage, family:famPage, famform:famForm };
