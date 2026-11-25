@@ -81,6 +81,8 @@
   .danger{background:var(--danger);color:var(--on-danger);border:2px solid var(--danger)}
   .ghost{background:transparent;color:var(--primary-dark);border:2px solid transparent;text-decoration:underline}
   .row{display:flex;gap:10px}.row>.btn{flex:1}
+  .undozone{margin-top:56px;padding-top:16px;border-top:1px solid var(--soft);text-align:center}.undozone p{margin:0 0 8px;color:var(--muted);font-size:15.5px}
+  .btn.quiet{background:var(--surface);color:var(--ink);border:2px solid var(--line);width:auto;display:inline-block;min-width:70%;min-height:56px}
   .link{background:none;border:none;color:var(--primary-dark);text-decoration:underline;font-size:16px;min-height:44px;padding:0 4px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
   .chip{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:999px;font-size:13.5px;font-weight:700;white-space:nowrap}
   .chip svg.i{width:15px;height:15px;stroke-width:2.4}
@@ -100,6 +102,10 @@
   .next .btn.secondary:hover{background:rgba(255,255,255,.14)}
   .next .btn.secondary{background:transparent;color:#fff;border-color:#fff}
   .next .row{margin-top:12px}.next .row .btn{margin:0;font-size:16px;min-height:50px}
+  .left{background:var(--surface);border:2px solid var(--primary);border-radius:18px;padding:14px 16px;margin:12px 0 4px}
+  .left h2{margin:0 0 6px;font-size:19px}.left ul{list-style:none;margin:0 0 6px;padding:0}
+  .left li{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--soft);font-size:17px}
+  .left li:first-child{border-top:none}.left li b{font-weight:700}
   .prog{display:flex;align-items:center;gap:14px;margin:10px 0}
   .ring{width:64px;height:64px;flex:none}
   .ring circle{fill:none;stroke-width:7}
@@ -109,9 +115,9 @@
   .dose.missed{border:2px solid var(--danger)}
   .medic{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex:none}
   .dose .g{flex:1;min-width:0}
-  .dose .n{font-weight:700;font-size:16.5px}
-  .dose .m{font-size:14px;color:var(--muted)}
-  .dose .t{font-weight:700;font-size:15px;text-align:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+  .dose .n{font-weight:700;font-size:18px}
+  .dose .m{font-size:15.5px;color:var(--muted)}
+  .dose .t{font-weight:700;font-size:16.5px;text-align:end;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
   .fab{position:fixed;inset-inline-end:16px;bottom:94px;z-index:5;display:flex;align-items:center;gap:8px;min-height:56px;padding:0 18px 0 14px;border-radius:28px;border:none;background:var(--primary-dark);color:var(--on-primary);font-size:16px;font-weight:700;box-shadow:0 6px 16px rgba(0,0,0,.22);cursor:pointer}
   [dir="rtl"] .fab{padding:0 14px 0 18px}
   .empty{text-align:center;padding:24px 8px}
@@ -283,6 +289,7 @@
 </style>
 </head>
 <body>
+
 
 <div class="app" id="dev">
   <nav class="tabs" id="tabs" aria-label="Main"></nav>
@@ -481,6 +488,8 @@ const L = {
 };
 const t = k => L[S.lang][k];
 Object.assign(L.en, {
+  leftH:'Still to take today', leftN:n=>n===1?'1 dose left today':`${n} doses left today`, leftNone:'Nothing left to take today.', seeToday:'See today’s list',
+  upLater:'Later today', trySay:'Say a short command after “Listening…” appears, or just tap one:', wrongTap:'Marked by mistake?',
   appts:'Appointments', svc:'Services', svcMeds:'My medicines', svcAppts:'Appointments', svcHist:'Record', svcFb:'Send feedback', svcAcct:'Profile', svcAdd:'Add medicine',
   hiName:n=>`Hello, ${n}`, hi:'Hello', nextAppt:'NEXT APPOINTMENT', noAppts:'No appointments yet', noApptsT:'Add your doctor appointments and we will remind you before each one.',
   apptsH:'My appointments', addAppt:'Add appointment', upcoming:'Upcoming', past:'Past', apptAddH:'Add appointment', apptEditH:'Edit appointment',
@@ -512,6 +521,8 @@ Object.assign(L.en, {
   sound:'Reminder sound', soundD:'Play a sound and vibrate when a reminder arrives.', noPost:'There is no postponed reminder today.',
 });
 Object.assign(L.ar, {
+  leftH:'باقي عليك اليوم', leftN:n=>n===1?'باقي جرعة وحدة اليوم':n===2?'باقي جرعتين اليوم':`باقي ${N(n)} جرعات اليوم`, leftNone:'ما باقي عليك شي اليوم.', seeToday:'عرض قائمة اليوم',
+  upLater:'باقية اليوم', trySay:'قل كلمة قصيرة بعد ما يطلع «أسمعك…»، أو اضغط وحدة من هذي:', wrongTap:'سجلتها بالغلط؟',
   appts:'مواعيدي', svc:'الخدمات', svcMeds:'أدويتي', svcAppts:'مواعيدي', svcHist:'السجل', svcFb:'رأيك يهمنا', svcAcct:'الملف الشخصي', svcAdd:'إضافة دواء',
   hiName:n=>`أهلًا، ${n}`, hi:'أهلًا', nextAppt:'الموعد القادم', noAppts:'لا توجد مواعيد بعد', noApptsT:'أضف مواعيدك عند الدكتور ونذكّرك قبل كل موعد.',
   apptsH:'مواعيدي', addAppt:'إضافة موعد', upcoming:'القادمة', past:'السابقة', apptAddH:'إضافة موعد', apptEditH:'تعديل الموعد',
@@ -567,7 +578,7 @@ function status(d){
   return { s:'up' };
 }
 const chip = st => {
-  const map = { taken:['c-taken','check',t('st').taken(st.at?T(st.at):'')], due:['c-due','clock',t('st').due], missed:['c-missed','alert',t('st').missed], up:['c-up','clock',''], post:['c-due','bell',t('st').post(st.to?T(st.to):'')], wait:['c-wait','sync',t('st').wait] };
+  const map = { taken:['c-taken','check',t('st').taken(st.at?T(st.at):'')], due:['c-due','clock',t('st').due], missed:['c-missed','alert',t('st').missed], up:['c-up','clock',t('upLater')], post:['c-due','bell',t('st').post(st.to?T(st.to):'')], wait:['c-wait','sync',t('st').wait] };
   const [c,i,txt] = map[st.s]; return txt ? `<span class="chip ${c}">${ic(i)}${txt}</span>` : '';
 };
 
@@ -613,6 +624,8 @@ function parse(text){
       score = Math.max(sim, .85 * hit / ws.length); }
     if (score > best.score || (score === best.score && ph.length > best.len)) best = { intent, score, len:ph.length };
   }
+  // M3: «ما أخذته» (I didn't take it) must never record the dose; it now asks first.
+  if (best.intent === 'taken' && /(^| )(ما|لا|لم|not|didn't|didnt|haven't)( |$)/.test(x)) best = { ...best, score:Math.min(best.score, .5) };
   return best;
 }
 
@@ -772,9 +785,13 @@ VIEW.home = () => {
       ${st.s==='due' ? `<div class="row"><button class="btn primary" data-take="${esc(d.k)}" data-c="2">${ic('check')}${t('taken')}</button><button class="btn secondary" data-later="${esc(d.k)}" data-c="3">${ic('bell')}${t('later')}</button></div>` : ''}</section>`;
   } else next = `<div class="banner ok" style="margin-top:12px">${ic('check')}<span class="g">${t('allDone')}</span></div>`;
   const slots = [[], [], []]; ds.forEach(d => slots[d.when.getHours() < 12 ? 0 : d.when.getHours() < 17 ? 1 : 2].push(d));
-  return `${head}${next}${grid}${apptBox}
-    <h2>${t('today')}</h2><div class="prog">${ring(taken, ds.length)}<div><b>${t('progress')(N(taken), N(ds.length))}</b></div></div>
-    <div data-c="9">${slots.map((s,i) => s.length ? `<h3 class="slot">${t('slots')[i]}</h3>${s.map(doseRow).join('')}` : '').join('')}</div>`;
+  const left = ds.map((d,i) => ({ d, st:sts[i] })).filter(x => ['due','missed','up','post','wait'].includes(x.st.s) && x.st.s !== 'wait');
+  const leftBox = `<section class="left" aria-labelledby="lfh" data-c="33"><h2 id="lfh">${ic('list')} ${left.length ? t('leftN')(left.length) : t('leftNone')}</h2>
+    ${left.length ? `<ul>${left.map(x => `<li><span><b>${medName(x.d.m)}</b> · <bdi>${T(x.d.when)}</bdi></span>${chip(x.st)}</li>`).join('')}</ul>` : ''}
+    <button class="link" data-act="toToday">${t('seeToday')}</button></section>`;
+  return `${head}${next}${leftBox}
+    <h2 id="todayH" tabindex="-1">${t('today')}</h2><div class="prog">${ring(taken, ds.length)}<div><b>${t('progress')(N(taken), N(ds.length))}</b></div></div>
+    <div data-c="9">${slots.map((s,i) => s.length ? `<h3 class="slot">${t('slots')[i]}</h3>${s.map(doseRow).join('')}` : '').join('')}</div>${grid}${apptBox}`;
 };
 VIEW.appts = () => {
   const n = now(), all = [...S.appts].map(a => ({ ...a, when:at(a.time, new Date(a.date+'T00:00')) }));
@@ -989,7 +1006,7 @@ function layerHTML(){
     case 'taken': body = `${head()}${vstat()}<div class="center" data-c="7"><div class="hero ok">${ic('check')}</div><h1 id="h" tabindex="-1">${t('takenH')}</h1>
       <p>${t('takenT')(medName(m), T(new Date(lg ? lg.at : Date.now())))}</p></div>
       <button class="btn primary" data-act="lyClose">${ic('home')}${t('viewToday')}</button>
-      <button class="btn secondary" data-act="lyUndoAsk" data-c="8">${ic('undo','flip')}${t('undoTaken')}</button>`; break;
+      <div class="undozone"><p>${t('wrongTap')}</p><button class="btn quiet" data-act="lyUndoAsk" data-c="8">${ic('undo','flip')}${t('undoTaken')}</button></div>`; break;
     case 'undo': body = `${head('lyBackTaken')}<div class="center"><div class="hero bad">${ic('alert')}</div><h1 id="h" tabindex="-1">${t('undoH')}</h1></div>
       <div class="card" data-c="11" style="margin-bottom:16px"><p>${t('undoA')(medName(m), T(new Date(lg ? lg.at : Date.now())))}</p><p style="margin:0">${t('undoB')}</p></div>
       <button class="btn danger" data-act="lyUndo">${ic('undo','flip')}${t('yesUndo')}</button><button class="btn secondary" data-act="lyBackTaken">${ic('check')}${t('keepTaken')}</button>`; break;
@@ -1030,7 +1047,7 @@ function dialogHTML(){
     else if (v.mode === 'sorry') body = `<h2 id="dh" tabindex="-1">${t('sorryNo')}</h2><div class="row" style="margin-top:12px"><button class="btn primary" data-act="vagain">${ic('mic')}${t('tryAgain')}</button><button class="btn secondary" data-act="dlgClose">${t('useBtns')}</button></div>`;
     else { const msg = { blocked:t('blockedMic'), novoice:t('noVoice'), off:t('voiceOff'), nodue:t('noneDue') }[v.why] || t('notCaught');
       body = `<div class="hero warn" style="width:64px;height:64px;margin-top:2px">${ic('mic')}</div><h2 id="dh" tabindex="-1" role="alert">${msg}</h2>${v.text ? `<p class="why">${esc(t('heard')(v.text))}</p>` : ''}
-      ${v.why==='notcaught' ? `<div class="row" style="margin-top:12px"><button class="btn primary" data-act="vagain">${ic('mic')}${t('tryAgain')}</button><button class="btn secondary" data-act="dlgClose">${t('useBtns')}</button></div><button class="link" data-act="vtype">${ic('kbd','s')}${t('typeIns')}</button>`
+      ${v.why==='notcaught' ? `<p class="why" style="margin:10px 0 6px">${t('trySay')}</p><div class="opts" data-c="34">${['taken','later','work'].map(i => `<button class="opt" data-act="vsay" data-intent="${i}">«${i==='taken'?t('taken'):i==='later'?t('later'):t('owork')}»</button>`).join('')}</div><div class="row" style="margin-top:12px"><button class="btn primary" data-act="vagain">${ic('mic')}${t('tryAgain')}</button><button class="btn secondary" data-act="dlgClose">${t('useBtns')}</button></div><button class="link" data-act="vtype">${ic('kbd','s')}${t('typeIns')}</button>`
         : ['off','nodue'].includes(v.why) ? `<button class="btn secondary" data-act="dlgClose">${t('useBtns')}</button>` : typeBox}`; }
     return `<div class="scrim" data-act="dlgClose"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dh"><button class="iconbtn x" data-act="dlgClose" aria-label="${t('stop')}">${ic('x')}</button>${body}</div>`;
   }
@@ -1330,6 +1347,8 @@ function act(a, b){
       return notify({ kind:'dose', post:true, d:{ k, med:id, time:tm } }); }
     /* reminder layer */
     case 'lyClose': S.banner = null; closeLayer(); return;
+    case 'toToday': { const h = document.getElementById('todayH'); if (h){ h.scrollIntoView({ behavior:'smooth', block:'start' }); h.focus({ preventScroll:true }); } return; }
+    case 'vsay': { const it = b.dataset.intent; stopListen(); S.dialog = null; S.voiceUI = null; return doIntent(it, cmdLabel(it)); }
     case 'lyTake': return takeDose(L0, 'button');
     case 'lyLater': return openPost();
     case 'lyBackRem': S.layer = { ...L0, scr:'rem' }; S.dialog = null; return render(true);
